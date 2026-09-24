@@ -346,13 +346,11 @@
   }
   .diploma{
     position: relative;
-    aspect-ratio: 297 / 210;
+    aspect-ratio: 279.4 / 215.9; /* Carta horizontal, igual que el PDF */
     background:
       radial-gradient(ellipse at 50% 45%, rgba(59,115,104,0.06), transparent 65%),
       #FFFDF7;
     border: 1.2cqw solid var(--primary);
-    outline: 0.35cqw solid var(--accent);
-    outline-offset: -2.6cqw;
     box-shadow: 0 10px 28px rgba(22,48,43,0.18);
     color: var(--ink);
     text-align: center;
@@ -370,7 +368,14 @@
     opacity: 0.06;
     pointer-events: none;
   }
-  .diploma > *:not(.diploma-watermark){ position: relative; }
+  /* Marco dorado interior (elemento real y no outline, para que salga en el PDF) */
+  .diploma > .diploma-inner-border{
+    position: absolute;
+    inset: 1.05cqw;
+    border: 0.35cqw solid var(--accent);
+    pointer-events: none;
+  }
+  .diploma > *:not(.diploma-watermark):not(.diploma-inner-border){ position: relative; }
   .diploma-logo{ height: 6.2cqw; width: auto; margin-bottom: 1.6cqw; }
   .diploma-entity{
     margin: 0;
@@ -469,6 +474,14 @@
     text-align: left;
   }
   .draft-note[hidden]{ display: none; }
+
+  .download-status{
+    min-height: 1.2em;
+    margin: 10px 0 8px;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .download-status.error{ color: var(--incorrect); font-weight: 500; }
 
   .question{
     font-size: 1.25rem;
@@ -848,6 +861,7 @@
       <p>Respondiste correctamente las 5 preguntas sobre conservación del agua.</p>
       <div class="diploma-frame">
         <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
+          <div class="diploma-inner-border" aria-hidden="true"></div>
           <svg class="diploma-watermark" viewBox="0 0 100 130" aria-hidden="true">
             <path d="M50 4C50 4 8 58 8 86a42 42 0 0 0 84 0C92 58 50 4 50 4Z" fill="#264C45"/>
           </svg>
@@ -879,7 +893,9 @@
         </div>
       </div>
       <p class="draft-note" id="draftNote" hidden></p>
-      <p class="small" style="font-size:0.8rem;color:var(--ink-soft);margin:0 0 20px;">La descarga en PDF y el envío al correo se activarán más adelante.</p>
+      <button class="next-btn" id="downloadBtn">Descargar certificado (PDF)</button>
+      <p class="download-status" id="downloadStatus" aria-live="polite"></p>
+      <p class="small" style="font-size:0.8rem;color:var(--ink-soft);margin:0 0 20px;">Tu certificado queda guardado en este celular: si vuelves a abrir el enlace, lo verás de nuevo.</p>
       <button class="ghost-btn" id="restartBtn">Reiniciar demostración</button>
     </section>
 
@@ -1038,7 +1054,7 @@
     refreshVideos();
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    if (["intro", "quiz", "outro"].includes(name)){
+    if (["intro", "quiz", "outro", "done"].includes(name)){
       saveProgress(name);
     }
   }
@@ -1230,12 +1246,18 @@
     return String(num || "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
 
+  // Fecha en que terminó (guardada), para que el certificado no cambie si lo abren otro día
+  function fechaFin(p){
+    return p.fechaFin ? new Date(p.fechaFin) : new Date();
+  }
+
   function certCode(p){
     // Código corto y estable a partir del documento + fecha (para identificar el certificado)
-    const base = `${p.tipoDocumento}${p.documento}${new Date().toISOString().slice(0,10)}`;
+    const fin = fechaFin(p);
+    const base = `${p.tipoDocumento}${p.documento}${fin.toISOString().slice(0,10)}`;
     let h = 0;
     for (const ch of base){ h = (h * 31 + ch.charCodeAt(0)) >>> 0; }
-    return `PGIRH-${new Date().getFullYear()}-${h.toString(36).toUpperCase().slice(0,6).padStart(6,"0")}`;
+    return `PGIRH-${fin.getFullYear()}-${h.toString(36).toUpperCase().slice(0,6).padStart(6,"0")}`;
   }
 
   function renderDiploma(){
@@ -1253,7 +1275,7 @@
     setCertField(document.getElementById("dipSignerRole"), "cargoFirmante");
     document.getElementById("dipProgram").textContent = CERT.programa;
 
-    const fecha = new Date().toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
+    const fecha = fechaFin(participant).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
     document.getElementById("dipDate").textContent = `${CERT.ciudad}, ${fecha}`;
     document.getElementById("dipCode").textContent = certCode(participant);
 
@@ -1275,9 +1297,9 @@
   }
 
   document.getElementById("outroBtn").addEventListener("click", () => {
+    participant.fechaFin = new Date().toISOString();
     setDoneTitle();
-    clearProgress();
-    showScreen("done");
+    showScreen("done"); // queda guardado: al volver a abrir el enlace ve su certificado
   });
 
   // 5. Reiniciar demo
@@ -1308,8 +1330,135 @@
     showScreen("register");
   });
 
+  // 6. Descargar certificado en PDF (carta horizontal)
+  // Las librerías se cargan solo al tocar el botón, para no gastar datos al abrir la página.
+  const PDF_LIBS = [
+    { src: "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
+      integrity: "sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" },
+    { src: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+      integrity: "sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" }
+  ];
+  const PDF_ANCHO_PX = 1100; // ancho al que se dibuja el diploma: igual en celular y computador
+  const PDF_MARGEN_MM = 8;   // margen blanco para que la impresora no corte el borde
+
+  const downloadBtn = document.getElementById("downloadBtn");
+  const downloadStatus = document.getElementById("downloadStatus");
+  let pdfLibsPromise = null;
+
+  function loadScript({ src, integrity }){
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = src;
+      s.integrity = integrity;
+      s.crossOrigin = "anonymous";
+      s.onload = resolve;
+      s.onerror = () => reject(new Error("No se pudo cargar " + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  function loadPdfLibs(){
+    if (!pdfLibsPromise){
+      pdfLibsPromise = Promise.all(PDF_LIBS.map(loadScript))
+        .catch(err => { pdfLibsPromise = null; throw err; });
+    }
+    return pdfLibsPromise;
+  }
+
+  function setDownloadStatus(text, isError){
+    downloadStatus.textContent = text;
+    downloadStatus.classList.toggle("error", !!isError);
+  }
+
+  async function svgToPng(svg){
+    const [, , vbW, vbH] = svg.getAttribute("viewBox").split(/\s+/).map(Number);
+    const xml = new XMLSerializer().serializeToString(svg);
+    const source = new Image();
+    source.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
+    await source.decode();
+    const escala = 800 / Math.max(vbW, vbH); // resolución suficiente para imprimir
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(vbW * escala);
+    canvas.height = Math.round(vbH * escala);
+    canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
+    const img = document.createElement("img");
+    img.className = svg.getAttribute("class");
+    img.src = canvas.toDataURL("image/png");
+    await img.decode();
+    svg.replaceWith(img);
+  }
+
+  async function diplomaToCanvas(){
+    if (document.fonts) await document.fonts.ready;
+    // Copia del diploma a un ancho fijo y oculta; solo se hace visible en la captura
+    const stage = document.createElement("div");
+    stage.className = "diploma-frame";
+    stage.dataset.pdfStage = "";
+    stage.style.cssText = `position:fixed;left:0;top:0;width:${PDF_ANCHO_PX}px;margin:0;visibility:hidden;pointer-events:none;`;
+    const copy = document.getElementById("diploma").cloneNode(true);
+    copy.removeAttribute("id");
+    copy.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+    copy.style.boxShadow = "none";
+    // html2canvas no dibuja los SVG (ni incrustados ni como imagen): la gota de fondo y el sello
+    // se convierten a PNG antes de la captura
+    await Promise.all([...copy.querySelectorAll("svg")].map(svgToPng));
+    stage.appendChild(copy);
+    document.body.appendChild(stage);
+    try{
+      return await html2canvas(copy, {
+        scale: 2,
+        backgroundColor: "#FFFDF7",
+        logging: false,
+        scrollX: 0,
+        scrollY: 0,
+        onclone: doc => { doc.querySelector("[data-pdf-stage]").style.visibility = "visible"; }
+      });
+    } finally {
+      stage.remove();
+    }
+  }
+
+  function pdfFileName(){
+    const nombre = (participant.nombre || "participante")
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    return `Certificado-${nombre || "participante"}.pdf`;
+  }
+
+  downloadBtn.addEventListener("click", async () => {
+    downloadBtn.disabled = true;
+    setDownloadStatus("Preparando tu certificado…");
+    try{
+      await loadPdfLibs();
+      const canvas = await diplomaToCanvas();
+      const pdf = new window.jspdf.jsPDF({ orientation: "landscape", unit: "mm", format: "letter" });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const w = pageW - PDF_MARGEN_MM * 2;
+      const h = w * canvas.height / canvas.width;
+      pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", PDF_MARGEN_MM, (pageH - h) / 2, w, h);
+      pdf.setProperties({
+        title: `Certificado — ${participant.nombre || "Participante"}`,
+        subject: CERT.programa,
+        author: "Alcaldía de Bucaramanga"
+      });
+      pdf.save(pdfFileName());
+      setDownloadStatus("Listo. Busca el PDF en las descargas de tu celular.");
+    } catch(err){
+      console.error(err);
+      setDownloadStatus("No se pudo generar el PDF. Revisa tu conexión a internet e inténtalo de nuevo.", true);
+    } finally {
+      downloadBtn.disabled = false;
+    }
+  });
+
   const saved = loadProgress();
-  if (saved && saved.screen && ["intro", "quiz", "outro"].includes(saved.screen)){
+  if (saved && saved.screen === "done" && saved.participant){
+    // Ya terminó en este celular: mostrar directamente su certificado
+    participant = saved.participant;
+    setDoneTitle();
+    showScreen("done");
+  } else if (saved && saved.screen && ["intro", "quiz", "outro"].includes(saved.screen)){
     participant = saved.participant || participant;
     current = typeof saved.current === "number" ? saved.current : 0;
     pendingResumeScreen = saved.screen;
