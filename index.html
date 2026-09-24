@@ -341,7 +341,7 @@
     opacity: 0.85;
   }
 
-  /* ===== Diploma (boceto) ===== */
+  /* ===== Diploma (diseño institucional) ===== */
   .diploma-frame{
     container-type: inline-size;
     margin: 22px 0 10px;
@@ -349,111 +349,105 @@
   .diploma{
     position: relative;
     aspect-ratio: 279.4 / 215.9; /* Carta horizontal, igual que el PDF */
-    background:
-      radial-gradient(ellipse at 50% 45%, rgba(59,115,104,0.06), transparent 65%),
-      #FFFDF7;
-    border: 1.2cqw solid var(--primary);
+    background: #FFFDF7;
     box-shadow: 0 10px 28px rgba(22,48,43,0.18);
     color: var(--ink);
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 5cqw 7cqw 4.2cqw;
     overflow: hidden;
   }
-  .diploma-watermark{
-    position: absolute;
-    left: 50%; top: 52%;
-    width: 34cqw; height: auto;
-    transform: translate(-50%,-50%);
-    opacity: 0.06;
-    pointer-events: none;
+  .diploma p{ margin: 0; }
+  /* Franja superior con el paisaje de frailejones, como el encabezado de la página */
+  .diploma-banda{
+    position: absolute; left: 0; right: 0; top: 0;
+    height: 17cqw;
   }
-  /* Marco dorado interior (elemento real y no outline, para que salga en el PDF) */
-  .diploma > .diploma-inner-border{
-    position: absolute;
-    inset: 1.05cqw;
-    border: 0.35cqw solid var(--accent);
-    pointer-events: none;
-  }
-  .diploma > *:not(.diploma-watermark):not(.diploma-inner-border){ position: relative; }
-  .diploma-logo{ height: 6.2cqw; width: auto; margin-bottom: 1.6cqw; }
-  .diploma-entity{
-    margin: 0;
-    font-size: 1.75cqw;
+  .diploma-banda-svg{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Cabe entre los frailejones de los lados (del 18% al 82% del ancho) y por encima del logo */
+  .diploma .diploma-program{
+    position: relative;
+    margin: 0 auto;
+    max-width: 62cqw;
+    padding-top: 3cqw;
+    font-family: 'Fraunces', serif;
+    font-size: 2.5cqw;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    line-height: 1.2;
+    color: #FFFFFF;
+    text-shadow: 0 0.15cqw 0.5cqw rgba(0,0,0,0.35);
+  }
+  .diploma-logo-card{
+    position: absolute; left: 50%; top: 10.5cqw;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 1.4cqw;
+    padding: 1.5cqw 2.8cqw;
+    box-shadow: 0 1.2cqw 2.4cqw rgba(8,20,17,0.25);
+  }
+  .diploma-logo{ display: block; height: 6.4cqw; width: auto; }
+  .diploma-body{
+    position: absolute; left: 8cqw; right: 8cqw; top: 25cqw;
+  }
+  .diploma-entity{
+    font-size: 1.45cqw;
+    font-weight: 600;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--primary);
   }
-  .diploma-certifica{
-    margin: 3cqw 0 1cqw;
+  .diploma .diploma-certifica{
+    margin-top: 2.6cqw;
     font-family: 'Fraunces', serif;
     font-style: italic;
-    font-size: 2.4cqw;
+    font-size: 2.3cqw;
     color: var(--ink-soft);
   }
-  .diploma-name{
-    margin: 0;
+  .diploma .diploma-name{
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 0.8cqw;
+    padding: 0 2cqw 0.8cqw;
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 5cqw;
+    font-size: 5.2cqw;
     line-height: 1.1;
     color: var(--primary-dark);
-    padding: 0 2cqw 0.8cqw;
     border-bottom: 0.25cqw solid var(--accent);
-    max-width: 90%;
   }
-  .diploma-doc{
-    margin: 1.2cqw 0 3cqw;
-    font-size: 1.85cqw;
-    color: var(--ink-soft);
-  }
-  .diploma-text{
-    margin: 0;
-    font-size: 2cqw;
-    line-height: 1.45;
-    max-width: 82%;
-  }
-  .diploma-course{
-    margin: 1cqw 0 0.8cqw;
+  .diploma .diploma-doc{ margin-top: 1.2cqw; font-size: 1.75cqw; color: var(--ink-soft); }
+  .diploma .diploma-text{ margin-top: 2.6cqw; font-size: 1.95cqw; }
+  .diploma .diploma-course{
+    margin-top: 0.9cqw;
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 3cqw;
+    font-size: 3.3cqw;
     line-height: 1.2;
     color: var(--primary);
   }
-  .diploma-program{
-    margin: 0;
-    font-size: 1.7cqw;
-    color: var(--ink-soft);
-  }
   .diploma-footer{
-    margin-top: auto;
-    width: 100%;
+    position: absolute; left: 7cqw; right: 7cqw; bottom: 6.2cqw;
     display: grid;
-    grid-template-columns: 1.25fr 1.35fr 0.8fr;
+    grid-template-columns: 1fr 0.9fr 1fr; /* la tercera columna queda vacía para centrar la firma */
     align-items: end;
-    gap: 2cqw;
+    gap: 3cqw;
   }
   .diploma-meta{
+    white-space: nowrap;
     text-align: left;
-    font-size: 1.45cqw;
-    line-height: 1.5;
+    font-size: 1.4cqw;
+    line-height: 1.6;
     color: var(--ink-soft);
   }
   .diploma-meta strong{ color: var(--ink); font-weight: 600; }
-  .diploma-sign{ font-size: 1.6cqw; line-height: 1.35; }
-  .diploma-sign-line{
-    border-top: 0.2cqw solid var(--ink);
-    margin: 0 auto 0.7cqw;
-    width: 100%;
-  }
-  .diploma-sign-name, .diploma-sign-role{ display: inline-block; }
-  .diploma-sign-name{ font-weight: 600; margin-bottom: 0.9cqw; }
+  .diploma-sign{ font-size: 1.55cqw; line-height: 1.4; }
+  .diploma-sign-line{ border-top: 0.18cqw solid var(--ink); margin-bottom: 0.8cqw; }
+  .diploma-sign-name{ font-weight: 600; }
   .diploma-sign-role{ color: var(--ink-soft); }
-  .diploma-seal{ justify-self: end; width: 9cqw; height: 9cqw; }
+  .diploma-ribbon{
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 2.2cqw;
+    background: var(--primary);
+    border-top: 0.45cqw solid var(--accent);
+  }
 
   /* Campos que aún faltan por confirmar */
   .pending{
@@ -863,18 +857,42 @@
       <p>Respondiste correctamente las 5 preguntas sobre conservación del agua.</p>
       <div class="diploma-frame">
         <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
-          <div class="diploma-inner-border" aria-hidden="true"></div>
-          <svg class="diploma-watermark" viewBox="0 0 100 130" aria-hidden="true">
-            <path d="M50 4C50 4 8 58 8 86a42 42 0 0 0 84 0C92 58 50 4 50 4Z" fill="#264C45"/>
-          </svg>
-          <img class="diploma-logo" id="diplomaLogo" alt="Alcaldía de Bucaramanga — Secretaría de Salud y Ambiente">
-          <p class="diploma-entity">Alcaldía de Bucaramanga · Secretaría de Salud y Ambiente</p>
-          <p class="diploma-certifica">Hace constar que</p>
-          <p class="diploma-name" id="dipName">Nombre del participante</p>
-          <p class="diploma-doc" id="dipDoc">identificado(a) con C.C. 0.000.000.000</p>
-          <p class="diploma-text">participó y aprobó satisfactoriamente la capacitación virtual</p>
-          <p class="diploma-course"><span id="dipCourse"></span></p>
-          <p class="diploma-program" id="dipProgram"></p>
+          <div class="diploma-banda">
+            <svg class="diploma-banda-svg" viewBox="0 0 1100 187" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <linearGradient id="dipCielo" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3B7368"/>
+                  <stop offset="60%" stop-color="#224A42"/>
+                  <stop offset="100%" stop-color="#16302B"/>
+                </linearGradient>
+                <g id="dipFrailejon" fill="#16302B">
+                  <path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z"/>
+                  <path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z"/>
+                </g>
+              </defs>
+              <rect width="1100" height="187" fill="url(#dipCielo)"/>
+              <path d="M0,120 Q140,100 290,114 T590,106 T880,112 T1100,104 L1100,187 L0,187 Z" fill="#F3EFE3" opacity="0.12"/>
+              <path d="M0,150 Q160,132 330,146 T660,138 T1100,142 L1100,187 L0,187 Z" fill="#1F5C4E" opacity="0.9"/>
+              <use href="#dipFrailejon" transform="translate(90,152) scale(1.1)"/>
+              <use href="#dipFrailejon" transform="translate(170,146) scale(0.8)"/>
+              <use href="#dipFrailejon" transform="translate(930,146) scale(0.85)"/>
+              <use href="#dipFrailejon" transform="translate(1010,152) scale(1.15)"/>
+            </svg>
+            <p class="diploma-program" id="dipProgram"></p>
+          </div>
+          <div class="diploma-logo-card">
+            <img class="diploma-logo" id="diplomaLogo" alt="Alcaldía de Bucaramanga — Secretaría de Salud y Ambiente">
+          </div>
+
+          <div class="diploma-body">
+            <p class="diploma-entity">Alcaldía de Bucaramanga · Secretaría de Salud y Ambiente</p>
+            <p class="diploma-certifica">Hace constar que</p>
+            <p class="diploma-name" id="dipName">Nombre del participante</p>
+            <p class="diploma-doc" id="dipDoc">identificado(a) con C.C. 0.000.000.000</p>
+            <p class="diploma-text">participó y aprobó satisfactoriamente la capacitación virtual</p>
+            <p class="diploma-course"><span id="dipCourse"></span></p>
+          </div>
+
           <div class="diploma-footer">
             <div class="diploma-meta">
               <span id="dipDate"></span><br>
@@ -885,13 +903,9 @@
               <span class="diploma-sign-name" id="dipSigner"></span><br>
               <span class="diploma-sign-role" id="dipSignerRole"></span>
             </div>
-            <svg class="diploma-seal" viewBox="0 0 100 100" aria-hidden="true">
-              <circle cx="50" cy="50" r="46" fill="none" stroke="#C97A2B" stroke-width="3"/>
-              <circle cx="50" cy="50" r="38" fill="none" stroke="#C97A2B" stroke-width="1.2" stroke-dasharray="3 3"/>
-              <path d="M50 24C50 24 33 47 33 59a17 17 0 0 0 34 0C67 47 50 24 50 24Z" fill="#264C45"/>
-              <path d="M43 60a7 7 0 0 0 7 7" stroke="#FFFDF7" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            </svg>
+            <div></div>
           </div>
+          <div class="diploma-ribbon"></div>
         </div>
       </div>
       <p class="draft-note" id="draftNote" hidden></p>
@@ -1378,7 +1392,7 @@
     const source = new Image();
     source.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(xml)));
     await source.decode();
-    const escala = 800 / Math.max(vbW, vbH); // resolución suficiente para imprimir
+    const escala = 2400 / Math.max(vbW, vbH); // resolución suficiente para imprimir (el PDF se dibuja a 2200 px)
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(vbW * escala);
     canvas.height = Math.round(vbH * escala);
@@ -1398,12 +1412,12 @@
     stage.dataset.pdfStage = "";
     stage.style.cssText = `position:fixed;left:0;top:0;width:${PDF_ANCHO_PX}px;margin:0;visibility:hidden;pointer-events:none;`;
     const copy = document.getElementById("diploma").cloneNode(true);
+    copy.style.boxShadow = "none";
+    // html2canvas no dibuja los SVG (ni incrustados ni como imagen): el paisaje de la franja
+    // se convierte a PNG antes de la captura, y antes de quitar los id (el SVG los usa por dentro)
+    await Promise.all([...copy.querySelectorAll("svg")].map(svgToPng));
     copy.removeAttribute("id");
     copy.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
-    copy.style.boxShadow = "none";
-    // html2canvas no dibuja los SVG (ni incrustados ni como imagen): la gota de fondo y el sello
-    // se convierten a PNG antes de la captura
-    await Promise.all([...copy.querySelectorAll("svg")].map(svgToPng));
     stage.appendChild(copy);
     document.body.appendChild(stage);
     try{
