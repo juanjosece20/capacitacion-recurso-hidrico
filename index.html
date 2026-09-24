@@ -650,6 +650,28 @@
     margin-top: 10px;
     text-align: center;
   }
+  .ghost-btn[hidden]{ display: none; }
+
+  /* Acción que borra datos: rojo de acento oscurecido (legible sobre el fondo amarillo claro) */
+  .ghost-btn--alerta{ border-color: var(--incorrect); color: var(--incorrect); font-weight: 600; }
+  .ghost-btn--alerta:hover{ border-color: var(--incorrect); color: var(--incorrect); background: rgba(196, 0, 31, 0.05); }
+  .ghost-btn:disabled{ opacity: 0.6; cursor: wait; }
+
+  /* Confirmación de "Soy otra persona" */
+  .confirm-panel{
+    margin: 12px 0 18px;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(255, 178, 2, 0.10);
+    border: 1.5px solid rgba(255, 178, 2, 0.55);
+    text-align: left;
+  }
+  .confirm-panel[hidden]{ display: none; }
+  .confirm-title{ margin: 0 0 6px; font-weight: 600; color: var(--ink); }
+  .confirm-title:focus{ outline: none; }
+  .confirm-text{ margin: 0; font-size: 0.9rem; line-height: 1.5; color: var(--ink); }
+  .confirm-panel .next-btn{ margin-top: 14px; }
+  .confirm-panel .download-status{ margin: 8px 0 0; }
 
   .dev-btn{
     display: block;
@@ -779,7 +801,13 @@
       <h2 class="card-title">Ya habías empezado</h2>
       <p class="card-subtitle">Encontramos un progreso guardado en este celular. ¿Quieres continuar donde ibas o empezar de nuevo?</p>
       <button class="next-btn" id="resumeContinueBtn">Continuar donde iba →</button>
-      <button class="ghost-btn ghost-btn--full" id="resumeRestartBtn">Empezar de nuevo</button>
+      <button class="ghost-btn ghost-btn--full" id="resumeOtherBtn">Soy otra persona: empezar de nuevo</button>
+      <div class="confirm-panel" id="resumeOtherPanel" hidden>
+        <p class="confirm-title" tabindex="-1">¿Empezar como otra persona?</p>
+        <p class="confirm-text" data-otra-texto></p>
+        <button class="ghost-btn ghost-btn--full ghost-btn--alerta" data-otra-confirmar>Sí, empezar de nuevo</button>
+        <button class="ghost-btn ghost-btn--full" data-otra-cancelar>Cancelar</button>
+      </div>
     </section>
 
     <!-- 1. Registro -->
@@ -934,6 +962,15 @@
       <button class="next-btn" id="downloadBtn">Descargar certificado (PDF)</button>
       <p class="download-status" id="downloadStatus" aria-live="polite"></p>
       <p class="small" style="font-size:0.8rem;color:var(--ink-soft);margin:0 0 20px;">Tu certificado queda guardado en este celular: si vuelves a abrir el enlace, lo verás de nuevo.</p>
+      <button class="ghost-btn ghost-btn--full" id="doneOtherBtn">Soy otra persona: empezar de nuevo</button>
+      <div class="confirm-panel" id="doneOtherPanel" hidden>
+        <p class="confirm-title" tabindex="-1">¿Empezar como otra persona?</p>
+        <p class="confirm-text" data-otra-texto></p>
+        <button class="next-btn" data-otra-descargar>Descargar el certificado primero</button>
+        <p class="download-status" data-otra-estado aria-live="polite"></p>
+        <button class="ghost-btn ghost-btn--full ghost-btn--alerta" data-otra-confirmar>Sí, empezar de nuevo</button>
+        <button class="ghost-btn ghost-btn--full" data-otra-cancelar>Cancelar</button>
+      </div>
       <button class="ghost-btn" id="restartBtn">Reiniciar demostración</button>
     </section>
 
@@ -1348,16 +1385,23 @@
     registrarEnvio("fin");
   });
 
-  // 5. Reiniciar demo
-  document.getElementById("restartBtn").addEventListener("click", () => {
+  // Borra de este celular los datos y el progreso de la persona actual.
+  // No toca la cola de envíos a la hoja (COLA_KEY): lo pendiente se sigue enviando.
+  function borrarDatosDelCelular(){
     current = 0;
     participant = { nombre: "", tipoDocumento: "", documento: "", telefono: "", correo: "" };
+    pendingResumeScreen = null;
     fNombre.value = ""; fDocumento.value = ""; fTelefono.value = ""; fCorreo.value = "";
     fTipoDoc.value = "CC";
     fConsent.checked = false;
     touched.clear();
     clearProgress();
     validateForm();
+  }
+
+  // 5. Reiniciar demo
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    borrarDatosDelCelular();
     showScreen("register");
   });
 
@@ -1369,12 +1413,6 @@
     if (target === "done") setDoneTitle();
   });
 
-  document.getElementById("resumeRestartBtn").addEventListener("click", () => {
-    current = 0;
-    participant = { nombre: "", tipoDocumento: "", documento: "", telefono: "", correo: "" };
-    clearProgress();
-    showScreen("register");
-  });
 
   // 6. Descargar certificado en PDF (carta horizontal)
   // Las librerías se cargan solo al tocar el botón, para no gastar datos al abrir la página.
@@ -1411,9 +1449,14 @@
     return pdfLibsPromise;
   }
 
-  function setDownloadStatus(text, isError){
-    downloadStatus.textContent = text;
-    downloadStatus.classList.toggle("error", !!isError);
+  // El certificado se puede descargar desde el botón principal o desde la confirmación de "Soy otra persona";
+  // el mensaje aparece junto al botón que se tocó
+  const otherDownloadBtn = document.querySelector("#doneOtherPanel [data-otra-descargar]");
+  const otherDownloadStatus = document.querySelector("#doneOtherPanel [data-otra-estado]");
+
+  function setDownloadStatus(text, isError, statusEl = downloadStatus){
+    statusEl.textContent = text;
+    statusEl.classList.toggle("error", !!isError);
   }
 
   async function svgToPng(svg){
@@ -1471,9 +1514,10 @@
     return `Certificado-${nombre || "participante"}.pdf`;
   }
 
-  downloadBtn.addEventListener("click", async () => {
+  async function descargarCertificado(statusEl){
     downloadBtn.disabled = true;
-    setDownloadStatus("Preparando tu certificado…");
+    otherDownloadBtn.disabled = true;
+    setDownloadStatus("Preparando tu certificado…", false, statusEl);
     try{
       await loadPdfLibs();
       const canvas = await diplomaToCanvas();
@@ -1489,14 +1533,18 @@
         author: "Alcaldía de Bucaramanga"
       });
       pdf.save(pdfFileName());
-      setDownloadStatus("Listo. Busca el PDF en las descargas de tu celular.");
+      setDownloadStatus("Listo. Busca el PDF en las descargas de tu celular.", false, statusEl);
     } catch(err){
       console.error(err);
-      setDownloadStatus("No se pudo generar el PDF. Revisa tu conexión a internet e inténtalo de nuevo.", true);
+      setDownloadStatus("No se pudo generar el PDF. Revisa tu conexión a internet e inténtalo de nuevo.", true, statusEl);
     } finally {
       downloadBtn.disabled = false;
+      otherDownloadBtn.disabled = false;
     }
-  });
+  }
+
+  downloadBtn.addEventListener("click", () => descargarCertificado(downloadStatus));
+  otherDownloadBtn.addEventListener("click", () => descargarCertificado(otherDownloadStatus));
 
   // 7. Envío de registros a la hoja de Google (REGISTRO_URL)
   // Cada envío se guarda en una cola en este celular y solo se borra cuando la hoja lo confirma.
@@ -1597,6 +1645,63 @@
     if (document.visibilityState === "visible") enviarPendientes();
   });
   enviarPendientes(); // lo que haya quedado pendiente de una visita anterior
+
+  // 8. "Soy otra persona": para celulares que usan varias personas.
+  // Pide confirmación, intenta enviar a la hoja lo pendiente y borra de este celular los datos
+  // y el progreso de la persona anterior. No borra nada de la hoja.
+  const ESPERA_ENVIO_MAX_MS = 6000;
+
+  // Si no se alcanza a enviar (sin internet), la cola se conserva y se envía en la próxima oportunidad:
+  // cada envío lleva sus propios datos, así que no depende de lo que se borra.
+  async function enviarAntesDeBorrar(){
+    if (!REGISTRO_URL || !leerCola().length) return;
+    await Promise.race([enviarPendientes(), new Promise(r => setTimeout(r, ESPERA_ENVIO_MAX_MS))]);
+  }
+
+  function prepararOtraPersona(botonId, panelId, textoAviso){
+    const boton = document.getElementById(botonId);
+    const panel = document.getElementById(panelId);
+    const confirmar = panel.querySelector("[data-otra-confirmar]");
+    const cerrar = () => { panel.hidden = true; boton.hidden = false; };
+
+    boton.addEventListener("click", () => {
+      panel.querySelector("[data-otra-texto]").textContent = textoAviso();
+      const estado = panel.querySelector("[data-otra-estado]");
+      if (estado) setDownloadStatus("", false, estado);
+      boton.hidden = true;
+      panel.hidden = false;
+      panel.querySelector(".confirm-title").focus({ preventScroll: true });
+      panel.scrollIntoView({ block: "center", behavior: "smooth" });
+    });
+
+    panel.querySelector("[data-otra-cancelar]").addEventListener("click", () => {
+      cerrar();
+      boton.focus();
+    });
+
+    confirmar.addEventListener("click", async () => {
+      confirmar.disabled = true;
+      confirmar.textContent = "Un momento…";
+      try{
+        await enviarAntesDeBorrar();
+      } finally {
+        borrarDatosDelCelular();
+        setDownloadStatus("");
+        cerrar();
+        confirmar.disabled = false;
+        confirmar.textContent = "Sí, empezar de nuevo";
+        showScreen("register");
+      }
+    });
+  }
+
+  const nombreAnterior = () => participant.nombre || "la persona anterior";
+  prepararOtraPersona("doneOtherBtn", "doneOtherPanel", () =>
+    `Se borrarán de este celular los datos y el certificado de ${nombreAnterior()}. ` +
+    "Si todavía no lo descargaste, hazlo antes: después ya no se podrá ver en este celular.");
+  prepararOtraPersona("resumeOtherBtn", "resumeOtherPanel", () =>
+    `Se borrará de este celular el avance de ${nombreAnterior()}. ` +
+    "Si esa persona quiere terminar después, tendrá que empezar de nuevo.");
 
   const saved = loadProgress();
   if (saved && saved.screen === "done" && saved.participant){
