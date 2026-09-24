@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Capacitación en Conservación del Agua">
 <meta name="twitter:description" content="Programa de Gestión Integral del Recurso Hídrico · Alcaldía de Bucaramanga. Completa el curso y descarga tu certificado.">
 <meta name="twitter:image" content="https://juanjosece20.github.io/capacitacion-recurso-hidrico/og-image.png">
-<meta name="theme-color" content="#264C45">
+<meta name="theme-color" content="#016737">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -31,12 +31,18 @@
     --card-bg: #FBFAF5;
     --ink: #1E2A24;
     --ink-soft: #55605A;
-    --primary: #264C45;
-    --primary-dark: #16302B;
-    --primary-light: #3B7368;
-    --accent: #C97A2B;
-    --correct: #3F7A56;
-    --incorrect: #A8442E;
+    /* Paleta de la Alcaldía de Bucaramanga. Texto solo sobre los verdes oscuros:
+       el verde brillante, el lima y el amarillo no tienen contraste suficiente para texto. */
+    --primary: #016737;       /* Verde oscuro institucional: zonas con texto, botones */
+    --primary-dark: #014A28;  /* Verde oscuro más profundo (derivado) */
+    --primary-light: #017A42; /* Botón al pasar el dedo (derivado; texto crema 4.7:1) */
+    --brand-bright: #02B205;  /* Verde brillante: solo detalles sin texto encima */
+    --leaf: #9EC430;          /* Verde hoja */
+    --lime: #C7D400;          /* Verde lima */
+    --accent: #FFB202;        /* Amarillo de acento: líneas, fondos, nunca como color de texto */
+    --accent-ink: #6B4A00;    /* Texto sobre fondos amarillos claros (derivado) */
+    --correct: #016737;
+    --incorrect: #C4001F;     /* Rojo de acento oscurecido para que se lea (6.2:1) */
     --border: #D9D3C1;
     --cream: #F3EFE3;
   }
@@ -109,7 +115,7 @@
     font-size: 0.85rem;
     font-weight: 500;
     letter-spacing: 0.01em;
-    color: #D9E7E1;
+    color: #E6F0CF;
     max-width: 440px;
     margin-left: auto;
     margin-right: auto;
@@ -140,7 +146,7 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px 18px;
-    box-shadow: 0 16px 32px -18px rgba(22, 48, 43, 0.35);
+    box-shadow: 0 16px 32px -18px rgba(1, 74, 40, 0.35);
   }
 
   .progress-row[hidden]{ display: none; }
@@ -159,7 +165,7 @@
     transition: background 0.45s ease, transform 0.45s ease;
   }
 
-  .segment.done{ background: var(--primary); }
+  .segment.done{ background: var(--brand-bright); }
   .segment.active{ background: var(--accent); transform: scaleY(1.5); }
 
   .progress-text{
@@ -174,7 +180,7 @@
     border: 1px solid var(--border);
     border-radius: 22px;
     padding: 26px 24px;
-    box-shadow: 0 24px 48px -24px rgba(22, 48, 43, 0.35);
+    box-shadow: 0 24px 48px -24px rgba(1, 74, 40, 0.35);
   }
 
   .card + .card{ margin-top: 20px; }
@@ -330,7 +336,7 @@
   .cert-placeholder{
     border: 1.5px dashed var(--accent);
     border-radius: 16px;
-    background: rgba(201, 122, 43, 0.07);
+    background: rgba(255, 178, 2, 0.10);
     padding: 30px 16px;
     display: flex;
     flex-direction: column;
@@ -359,7 +365,7 @@
     position: relative;
     aspect-ratio: 279.4 / 215.9; /* Carta horizontal, igual que el PDF */
     background: #FFFDF7;
-    box-shadow: 0 10px 28px rgba(22,48,43,0.18);
+    box-shadow: 0 10px 28px rgba(1,74,40,0.18);
     color: var(--ink);
     text-align: center;
     overflow: hidden;
@@ -460,22 +466,22 @@
 
   /* Campos que aún faltan por confirmar */
   .pending{
-    background: rgba(201,122,43,0.16);
+    background: rgba(255,178,2,0.22);
     outline: 0.2cqw dashed var(--accent);
     outline-offset: 0.3cqw;
     border-radius: 0.6cqw;
     padding: 0 0.6cqw;
-    color: #8A4F16;
+    color: var(--accent-ink);
   }
   .draft-note{
     margin: 12px 0 22px;
     padding: 10px 14px;
     border-radius: 12px;
-    background: rgba(201,122,43,0.09);
-    border: 1px solid rgba(201,122,43,0.35);
+    background: rgba(255,178,2,0.10);
+    border: 1px solid rgba(255,178,2,0.45);
     font-size: 0.82rem;
     line-height: 1.45;
-    color: #7A4A1C;
+    color: var(--accent-ink);
     text-align: left;
   }
   .draft-note[hidden]{ display: none; }
@@ -521,7 +527,7 @@
   .option:hover:not(:disabled){
     border-color: var(--primary-light);
     transform: translateY(-1px);
-    box-shadow: 0 8px 18px -10px rgba(22, 48, 43, 0.4);
+    box-shadow: 0 8px 18px -10px rgba(1, 74, 40, 0.4);
   }
 
   .option:active:not(:disabled){
@@ -539,7 +545,7 @@
     height: 26px;
     border-radius: 50%;
     border: 1.5px solid var(--accent);
-    color: var(--accent);
+    color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -549,7 +555,7 @@
 
   .option.wrong{
     border-color: var(--incorrect);
-    background: rgba(168, 68, 46, 0.06);
+    background: rgba(196, 0, 31, 0.06);
   }
 
   .option.wrong .badge{
@@ -558,8 +564,8 @@
   }
 
   .option.correct{
-    border-color: var(--correct);
-    background: rgba(63, 122, 86, 0.08);
+    border-color: var(--brand-bright);
+    background: rgba(2, 178, 5, 0.08);
   }
 
   .option.correct .badge{
@@ -593,7 +599,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    box-shadow: 0 14px 24px -12px rgba(22, 48, 43, 0.5);
+    box-shadow: 0 14px 24px -12px rgba(1, 74, 40, 0.5);
   }
 
   .next-btn:disabled{
@@ -663,7 +669,7 @@
     transition: border-color 0.2s ease, color 0.2s ease;
   }
 
-  .dev-btn:hover{ border-color: var(--accent); color: var(--accent); }
+  .dev-btn:hover{ border-color: var(--accent); color: var(--primary); }
   .dev-btn:active{ transform: scale(0.99); }
 
   .next-btn:focus-visible,
@@ -726,28 +732,28 @@
     <svg class="hero-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3B7368"/>
-      <stop offset="55%" stop-color="#264C45"/>
-      <stop offset="100%" stop-color="#16302B"/>
+      <stop offset="0%" stop-color="#016737"/>
+      <stop offset="55%" stop-color="#015A30"/>
+      <stop offset="100%" stop-color="#014A28"/>
     </linearGradient>
     <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#C97A2B" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#C97A2B" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#FFB202" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FFB202" stop-opacity="0"/>
     </radialGradient>
     <g id="frailejon">
-      <path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z" fill="#16302B"/>
-      <path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z" fill="#16302B"/>
+      <path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z" fill="#013D21"/>
+      <path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z" fill="#013D21"/>
     </g>
   </defs>
 
   <rect x="0" y="0" width="800" height="300" fill="url(#skyGrad)"/>
   <circle cx="600" cy="70" r="170" fill="url(#sunGlow)"/>
 
-  <path d="M 0,190 Q 0,190 70.0,177.5 Q 140,165 210.0,175.0 Q 280,185 350.0,170.0 Q 420,155 490.0,166.5 Q 560,178 630.0,169.0 Q 700,160 750.0,166.0 L 800,172 L 800,300 L 0,300 Z" fill="#F3EFE3" opacity="0.16"/>
-  <path d="M 0,225 Q 0,225 60.0,215.0 Q 120,205 190.0,213.5 Q 260,222 330.0,210.0 Q 400,198 470.0,208.0 Q 540,218 610.0,209.0 Q 680,200 740.0,207.5 L 800,215 L 800,300 L 0,300 Z" fill="#1F5C4E" opacity="0.88"/>
-  <path d="M 0,262 Q 0,262 65.0,248.5 Q 130,235 195.0,242.5 Q 260,250 330.0,239.0 Q 400,228 470.0,238.0 Q 540,248 610.0,240.0 Q 680,232 740.0,238.0 L 800,244 L 800,300 L 0,300 Z" fill="#16302B"/>
+  <path d="M 0,190 Q 0,190 70.0,177.5 Q 140,165 210.0,175.0 Q 280,185 350.0,170.0 Q 420,155 490.0,166.5 Q 560,178 630.0,169.0 Q 700,160 750.0,166.0 L 800,172 L 800,300 L 0,300 Z" fill="#9EC430" opacity="0.22"/>
+  <path d="M 0,225 Q 0,225 60.0,215.0 Q 120,205 190.0,213.5 Q 260,222 330.0,210.0 Q 400,198 470.0,208.0 Q 540,218 610.0,209.0 Q 680,200 740.0,207.5 L 800,215 L 800,300 L 0,300 Z" fill="#016737" opacity="0.95"/>
+  <path d="M 0,262 Q 0,262 65.0,248.5 Q 130,235 195.0,242.5 Q 260,250 330.0,239.0 Q 400,228 470.0,238.0 Q 540,248 610.0,240.0 Q 680,232 740.0,238.0 L 800,244 L 800,300 L 0,300 Z" fill="#013D21"/>
 
-  <ellipse cx="400" cy="297" rx="260" ry="5" fill="#F3EFE3" opacity="0.12"/>
+  <ellipse cx="400" cy="297" rx="260" ry="5" fill="#C7D400" opacity="0.15"/>
 
   <use href="#frailejon" transform="translate(130,235) scale(0.9)"/>
     <use href="#frailejon" transform="translate(260,250) scale(1.15)"/>
@@ -870,22 +876,29 @@
             <svg class="diploma-banda-svg" viewBox="0 0 1100 187" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
               <defs>
                 <linearGradient id="dipCielo" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#3B7368"/>
-                  <stop offset="60%" stop-color="#224A42"/>
-                  <stop offset="100%" stop-color="#16302B"/>
+                  <stop offset="0%" stop-color="#014A28"/><stop offset="60%" stop-color="#015A30"/><stop offset="100%" stop-color="#016737"/>
                 </linearGradient>
-                <g id="dipFrailejon" fill="#16302B">
-                  <path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z"/>
-                  <path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z"/>
-                </g>
+                <radialGradient id="dipLuz" cx="0.78" cy="0.55" r="0.45">
+                  <stop offset="0%" stop-color="#FFB202" stop-opacity="0.16"/><stop offset="100%" stop-color="#FFB202" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="dipColinaFondo" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#2F8238"/><stop offset="100%" stop-color="#0B6F37"/>
+                </linearGradient>
+                <linearGradient id="dipColinaFrente" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#3F9E3A"/><stop offset="35%" stop-color="#1E8A38"/><stop offset="100%" stop-color="#016737"/>
+                </linearGradient>
+                <filter id="dipBruma" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter>
+                <filter id="dipNeblina" x="-5%" y="-100%" width="110%" height="300%"><feGaussianBlur stdDeviation="9"/></filter>
+                <filter id="dipBorde" x="-5%" y="-50%" width="110%" height="200%"><feGaussianBlur stdDeviation="1.1"/></filter>
+                <g id="dipFrailejon"><path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z"/><path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z"/></g>
               </defs>
               <rect width="1100" height="187" fill="url(#dipCielo)"/>
-              <path d="M0,120 Q140,100 290,114 T590,106 T880,112 T1100,104 L1100,187 L0,187 Z" fill="#F3EFE3" opacity="0.12"/>
-              <path d="M0,150 Q160,132 330,146 T660,138 T1100,142 L1100,187 L0,187 Z" fill="#1F5C4E" opacity="0.9"/>
-              <use href="#dipFrailejon" transform="translate(90,152) scale(1.1)"/>
-              <use href="#dipFrailejon" transform="translate(170,146) scale(0.8)"/>
-              <use href="#dipFrailejon" transform="translate(930,146) scale(0.85)"/>
-              <use href="#dipFrailejon" transform="translate(1010,152) scale(1.15)"/>
+              <rect width="1100" height="187" fill="url(#dipLuz)"/>
+              <path d="M0,118 Q110,100.0 220,110 T440,114 T660,102 T880,110 T1100,100 L1100,187 L0,187 Z" fill="url(#dipColinaFondo)" filter="url(#dipBruma)"/>
+              <rect x="0" y="126" width="1100" height="20" fill="#C7D400" opacity="0.16" filter="url(#dipNeblina)"/>
+              <path d="M0,150 Q110,132.0 220,140 T440,146 T660,136 T880,144 T1100,140 L1100,187 L0,187 Z" fill="url(#dipColinaFrente)" filter="url(#dipBorde)"/>
+              <path d="M0,150 Q110,132.0 220,140 T440,146 T660,136 T880,144 T1100,140" fill="none" stroke="#02B205" stroke-width="1.6" opacity="0.55" filter="url(#dipBorde)"/>
+              <use href="#dipFrailejon" transform="translate(90,143.6) scale(1.1)" fill="#014A28"/><use href="#dipFrailejon" transform="translate(170,141.7) scale(0.8)" fill="#014A28"/><use href="#dipFrailejon" transform="translate(930,153.4) scale(0.85)" fill="#014A28"/><use href="#dipFrailejon" transform="translate(1010,154.3) scale(1.15)" fill="#014A28"/>
             </svg>
             <p class="diploma-program" id="dipProgram"></p>
           </div>
@@ -1038,7 +1051,7 @@
     el.innerHTML = `
       <div class="play-circle">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#264C45"/>
+          <path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#014A28"/>
         </svg>
       </div>
       <p>${label}</p>
@@ -1309,7 +1322,7 @@
     if (!CERT.firmante || !CERT.cargoFirmante) faltan.push("nombre y cargo de quien firma");
     const note = document.getElementById("draftNote");
     note.hidden = faltan.length === 0;
-    note.textContent = `Boceto: falta confirmar ${faltan.join(" y ")} (resaltado en naranja).`;
+    note.textContent = `Boceto: falta confirmar ${faltan.join(" y ")} (resaltado en amarillo).`;
   }
 
   // 4. Video despedida
