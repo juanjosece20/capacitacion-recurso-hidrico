@@ -791,7 +791,7 @@
 
       <div class="form-group">
         <label for="fNombre">Nombre completo</label>
-        <input type="text" id="fNombre" placeholder="Ej: María Fernanda Ortiz">
+        <input type="text" id="fNombre" maxlength="100" placeholder="Ej: María Fernanda Ortiz">
         <p class="field-hint" id="hintNombre">Nombres y apellidos completos.</p>
       </div>
 
@@ -940,6 +940,11 @@
   </main>
 
 <script>
+  // ===== Registro en Google Sheets =====
+  // Pega aquí la dirección de la aplicación web de Apps Script (termina en /exec).
+  // Mientras quede en "", no se envía nada y el curso funciona igual.
+  const REGISTRO_URL = "https://script.google.com/macros/s/AKfycbwu1TVIOjePB-JDycj3Ysx1DaMj9CWpOrlJcIVs7cZOVHHD5-CHiqYo5xszrCasffU/exec";
+
   // ===== Videos de la capacitación =====
   // Pega el enlace de YouTube (puede ser "no listado") tal como lo copias en YouTube:
   // sirve "https://youtu.be/…", "https://www.youtube.com/watch?v=…" o "https://youtube.com/shorts/…".
@@ -1176,9 +1181,11 @@
       tipoDocumento: fTipoDoc.value,
       documento: fDocumento.value.trim(),
       telefono: fTelefono.value.trim(),
-      correo: fCorreo.value.trim().toLowerCase()
+      correo: fCorreo.value.trim().toLowerCase(),
+      fechaRegistro: new Date().toISOString()
     };
     showScreen("intro");
+    registrarEnvio("registro");
   });
 
   // 2. Video introducción
@@ -1338,6 +1345,7 @@
     participant.fechaFin = new Date().toISOString();
     setDoneTitle();
     showScreen("done"); // queda guardado: al volver a abrir el enlace ve su certificado
+    registrarEnvio("fin");
   });
 
   // 5. Reiniciar demo
@@ -1489,6 +1497,106 @@
       downloadBtn.disabled = false;
     }
   });
+
+  // 7. Envío de registros a la hoja de Google (REGISTRO_URL)
+  // Cada envío se guarda en una cola en este celular y solo se borra cuando la hoja lo confirma.
+  // Si no hay internet o algo falla, la persona sigue el curso normalmente y se reintenta después:
+  // cada vez más espaciado mientras la página esté abierta, al volver la conexión y al abrir de nuevo el enlace.
+  const COLA_KEY = "capacitacion_agua_envios_v1"; // aparte del progreso: "Reiniciar" no la borra
+  let colaEnMemoria = [];   // respaldo si el navegador no deja guardar (modo privado)
+  let enviando = false;
+  let reintentoTimer = null;
+  let esperaReintento = 0;
+
+  function leerCola(){
+    try{
+      const raw = localStorage.getItem(COLA_KEY);
+      return raw ? JSON.parse(raw) : colaEnMemoria.slice();
+    } catch(e){ return colaEnMemoria.slice(); }
+  }
+
+  function guardarCola(cola){
+    colaEnMemoria = cola.slice();
+    try{
+      if (cola.length) localStorage.setItem(COLA_KEY, JSON.stringify(cola));
+      else localStorage.removeItem(COLA_KEY);
+    } catch(e){ /* sin almacenamiento: queda solo en memoria */ }
+  }
+
+  function registrarEnvio(tipo){
+    if (!REGISTRO_URL) return; // sin hoja configurada no se guarda nada para enviar
+    const p = participant;
+    const envio = {
+      tipo,
+      nombre: p.nombre,
+      tipoDocumento: p.tipoDocumento,
+      documento: p.documento,
+      telefono: p.telefono,
+      correo: p.correo,
+      consentimiento: true,
+      fechaRegistro: p.fechaRegistro || null
+    };
+    if (tipo === "fin"){
+      envio.fechaFin = p.fechaFin;
+      envio.codigo = certCode(p);
+    }
+    const cola = leerCola();
+    cola.push(envio);
+    guardarCola(cola);
+    enviarPendientes();
+  }
+
+  // "ok": la hoja lo guardó · "rechazado": datos inválidos, no sirve reintentar · "reintentar": falla temporal
+  async function enviarUno(envio){
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const limite = ctrl ? setTimeout(() => ctrl.abort(), 15000) : null;
+    try{
+      // text/plain evita la consulta previa (CORS) que Apps Script no responde
+      const resp = await fetch(REGISTRO_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(envio),
+        signal: ctrl ? ctrl.signal : undefined
+      });
+      const r = await resp.json();
+      if (r.ok) return "ok";
+      console.warn("La hoja no aceptó el envío:", r.error);
+      return r.reintentar ? "reintentar" : "rechazado";
+    } catch(e){
+      return "reintentar"; // sin internet, tiempo agotado o respuesta ilegible
+    } finally {
+      if (limite) clearTimeout(limite);
+    }
+  }
+
+  async function enviarPendientes(){
+    if (!REGISTRO_URL || enviando) return;
+    enviando = true;
+    clearTimeout(reintentoTimer);
+    reintentoTimer = null;
+    try{
+      while (leerCola().length){
+        const resultado = await enviarUno(leerCola()[0]);
+        if (resultado === "reintentar"){
+          esperaReintento = Math.min(Math.max(esperaReintento * 2, 30000), 5 * 60000);
+          reintentoTimer = setTimeout(enviarPendientes, esperaReintento);
+          return;
+        }
+        const cola = leerCola();
+        cola.shift(); // los nuevos envíos solo se agregan al final
+        guardarCola(cola);
+        esperaReintento = 0;
+      }
+    } finally {
+      enviando = false;
+    }
+  }
+
+  window.addEventListener("online", enviarPendientes);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") enviarPendientes();
+  });
+  enviarPendientes(); // lo que haya quedado pendiente de una visita anterior
 
   const saved = loadProgress();
   if (saved && saved.screen === "done" && saved.participant){
