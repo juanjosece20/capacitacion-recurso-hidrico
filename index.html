@@ -357,8 +357,12 @@
   }
 
   /* ===== Diploma (diseño institucional) ===== */
+  /* Todas las medidas del diploma usan --u (1% del ancho del diploma).
+     En navegadores actuales --u = 1cqw; en los anteriores a 2022, que no conocen cqw,
+     el programa la calcula en píxeles (ajustarUnidadDiploma). */
   .diploma-frame{
     container-type: inline-size;
+    --u: 1cqw;
     margin: 22px 0 10px;
   }
   .diploma{
@@ -370,107 +374,111 @@
     text-align: center;
     overflow: hidden;
   }
+  /* Respaldo para navegadores sin aspect-ratio (Safari 14, Chrome anterior a 2021): misma proporción carta */
+  @supports not (aspect-ratio: 1 / 1){
+    .diploma{ height: calc(var(--u) * 77.2727); }
+  }
   .diploma p{ margin: 0; }
   /* Franja superior con el paisaje de frailejones, como el encabezado de la página */
   .diploma-banda{
     position: absolute; left: 0; right: 0; top: 0;
-    height: 17cqw;
+    height: calc(var(--u) * 17);
   }
-  .diploma-banda-svg{ position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .diploma-banda-svg{ position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; }
   /* Cabe entre los frailejones de los lados (del 18% al 82% del ancho) y por encima del logo */
   .diploma .diploma-program{
     position: relative;
     margin: 0 auto;
-    max-width: 62cqw;
-    padding-top: 3cqw;
+    max-width: calc(var(--u) * 62);
+    padding-top: calc(var(--u) * 3);
     font-family: 'Fraunces', serif;
-    font-size: 2.5cqw;
+    font-size: calc(var(--u) * 2.5);
     font-weight: 600;
     line-height: 1.2;
     color: #FFFFFF;
-    text-shadow: 0 0.15cqw 0.5cqw rgba(0,0,0,0.35);
+    text-shadow: 0 calc(var(--u) * 0.15) calc(var(--u) * 0.5) rgba(0,0,0,0.35);
   }
   .diploma-logo-card{
-    position: absolute; left: 50%; top: 10.5cqw;
+    position: absolute; left: 50%; top: calc(var(--u) * 10.5);
     transform: translateX(-50%);
     background: #fff;
-    border-radius: 1.4cqw;
-    padding: 1.5cqw 2.8cqw;
-    box-shadow: 0 1.2cqw 2.4cqw rgba(8,20,17,0.25);
+    border-radius: calc(var(--u) * 1.4);
+    padding: calc(var(--u) * 1.5) calc(var(--u) * 2.8);
+    box-shadow: 0 calc(var(--u) * 1.2) calc(var(--u) * 2.4) rgba(8,20,17,0.25);
   }
-  .diploma-logo{ display: block; height: 6.4cqw; width: auto; }
+  .diploma-logo{ display: block; height: calc(var(--u) * 6.4); width: auto; }
   .diploma-body{
-    position: absolute; left: 8cqw; right: 8cqw; top: 25cqw;
+    position: absolute; left: calc(var(--u) * 8); right: calc(var(--u) * 8); top: calc(var(--u) * 25);
   }
   .diploma-entity{
-    font-size: 1.45cqw;
+    font-size: calc(var(--u) * 1.45);
     font-weight: 600;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--primary);
   }
   .diploma .diploma-certifica{
-    margin-top: 2.6cqw;
+    margin-top: calc(var(--u) * 2.6);
     font-family: 'Fraunces', serif;
     font-style: italic;
-    font-size: 2.3cqw;
+    font-size: calc(var(--u) * 2.3);
     color: var(--ink-soft);
   }
   .diploma .diploma-name{
     display: inline-block;
     max-width: 100%;
-    margin-top: 0.8cqw;
-    padding: 0 2cqw 0.8cqw;
+    margin-top: calc(var(--u) * 0.8);
+    padding: 0 calc(var(--u) * 2) calc(var(--u) * 0.8);
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 5.2cqw;
+    font-size: calc(var(--u) * 5.2);
     line-height: 1.1;
     color: var(--primary-dark);
-    border-bottom: 0.25cqw solid var(--accent);
+    border-bottom: calc(var(--u) * 0.25) solid var(--accent);
   }
-  .diploma .diploma-doc{ margin-top: 1.2cqw; font-size: 1.75cqw; color: var(--ink-soft); }
-  .diploma .diploma-text{ margin-top: 2.6cqw; font-size: 1.95cqw; }
+  .diploma .diploma-doc{ margin-top: calc(var(--u) * 1.2); font-size: calc(var(--u) * 1.75); color: var(--ink-soft); }
+  .diploma .diploma-text{ margin-top: calc(var(--u) * 2.6); font-size: calc(var(--u) * 1.95); }
   .diploma .diploma-course{
-    margin-top: 0.9cqw;
+    margin-top: calc(var(--u) * 0.9);
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 3.3cqw;
+    font-size: calc(var(--u) * 3.3);
     line-height: 1.2;
     color: var(--primary);
   }
   .diploma-footer{
-    position: absolute; left: 7cqw; right: 7cqw; bottom: 6.2cqw;
+    position: absolute; left: calc(var(--u) * 7); right: calc(var(--u) * 7); bottom: calc(var(--u) * 6.2);
     display: grid;
     grid-template-columns: 1fr 0.9fr 1fr; /* la tercera columna queda vacía para centrar la firma */
     align-items: end;
-    gap: 3cqw;
+    gap: calc(var(--u) * 3);
   }
   .diploma-meta{
     white-space: nowrap;
     text-align: left;
-    font-size: 1.4cqw;
+    font-size: calc(var(--u) * 1.4);
     line-height: 1.6;
     color: var(--ink-soft);
   }
   .diploma-meta strong{ color: var(--ink); font-weight: 600; }
-  .diploma-sign{ font-size: 1.55cqw; line-height: 1.4; }
-  .diploma-sign-line{ border-top: 0.18cqw solid var(--ink); margin-bottom: 0.8cqw; }
+  .diploma-sign{ font-size: calc(var(--u) * 1.55); line-height: 1.4; }
+  .diploma-sign-line{ border-top: calc(var(--u) * 0.18) solid var(--ink); margin-bottom: calc(var(--u) * 0.8); }
   .diploma-sign-name{ font-weight: 600; }
   .diploma-sign-role{ color: var(--ink-soft); }
   .diploma-ribbon{
     position: absolute; left: 0; right: 0; bottom: 0;
-    height: 2.2cqw;
+    height: calc(var(--u) * 2.2);
     background: var(--primary);
-    border-top: 0.45cqw solid var(--accent);
+    border-top: calc(var(--u) * 0.45) solid var(--accent);
   }
 
   /* Campos que aún faltan por confirmar */
   .pending{
     background: rgba(255,178,2,0.22);
-    outline: 0.2cqw dashed var(--accent);
-    outline-offset: 0.3cqw;
-    border-radius: 0.6cqw;
-    padding: 0 0.6cqw;
+    outline: calc(var(--u) * 0.2) dashed var(--accent);
+    outline-offset: calc(var(--u) * 0.3);
+    border-radius: calc(var(--u) * 0.6);
+    padding: 0 calc(var(--u) * 0.6);
     color: var(--accent-ink);
   }
   .draft-note{
@@ -1123,6 +1131,18 @@
   const outroCard = document.getElementById("outroCard");
   const doneCard = document.getElementById("doneCard");
 
+  // Respaldo para navegadores anteriores a 2022 (Safari < 16, Chrome < 105), que no conocen la unidad cqw:
+  // se calcula --u (1% del ancho del diploma) en píxeles. En los actuales no se hace nada.
+  const SOPORTA_CQW = !!(window.CSS && CSS.supports && CSS.supports("width", "1cqw"));
+
+  function ajustarUnidadDiploma(){
+    if (SOPORTA_CQW) return;
+    document.querySelectorAll(".diploma-frame:not([data-pdf-stage])").forEach(frame => {
+      if (frame.clientWidth) frame.style.setProperty("--u", (frame.clientWidth / 100) + "px");
+    });
+  }
+  window.addEventListener("resize", ajustarUnidadDiploma); // también al girar el celular
+
   function showScreen(name){
     resumeCard.hidden = name !== "resume";
     registerCard.hidden = name !== "register";
@@ -1132,6 +1152,7 @@
     outroCard.hidden = name !== "outro";
     doneCard.hidden = name !== "done";
     refreshVideos();
+    ajustarUnidadDiploma(); // el diploma solo tiene ancho cuando su pantalla está visible
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     if (["intro", "quiz", "outro", "done"].includes(name)){
@@ -1484,6 +1505,7 @@
     stage.className = "diploma-frame";
     stage.dataset.pdfStage = "";
     stage.style.cssText = `position:fixed;left:0;top:0;width:${PDF_ANCHO_PX}px;margin:0;visibility:hidden;pointer-events:none;`;
+    if (!SOPORTA_CQW) stage.style.setProperty("--u", (PDF_ANCHO_PX / 100) + "px");
     const copy = document.getElementById("diploma").cloneNode(true);
     copy.style.boxShadow = "none";
     // html2canvas no dibuja los SVG (ni incrustados ni como imagen): el paisaje de la franja
