@@ -86,13 +86,13 @@ function validar_(d) {
   if (tipo !== "registro" && tipo !== "fin") return { error: "Tipo de envío inválido" };
 
   const nombre = limpiarTexto_(d.nombre);
-  if (nombre.length < 3 || nombre.length > 100) return { error: "Nombre inválido" };
+  if (nombre.length < 3 || nombre.length > 80) return { error: "Nombre inválido" }; // más largo no cabe en el certificado
 
   const tipoDocumento = d.tipoDocumento;
   if (tipoDocumento !== "CC" && tipoDocumento !== "TI") return { error: "Tipo de documento inválido" };
 
   const documento = String(d.documento || "").trim();
-  if (!/^\d{6,11}$/.test(documento)) return { error: "Número de documento inválido" };
+  if (!/^\d{3,11}$/.test(documento)) return { error: "Número de documento inválido" }; // incluye cédulas antiguas
 
   const celular = String(d.telefono || "").trim();
   if (!/^3\d{9}$/.test(celular)) return { error: "Celular inválido" };
