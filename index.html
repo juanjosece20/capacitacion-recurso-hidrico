@@ -407,6 +407,26 @@
   }
   .video-facade:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
 
+  /* Aviso del video: bloqueado hasta verlo completo, ya visto, adelantado o sin cargar */
+  .video-aviso{
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 178, 2, 0.12);
+    border: 1.5px solid rgba(255, 178, 2, 0.6);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
+  }
+  .video-aviso[hidden]{ display: none; }
+  .video-aviso.visto{ background: rgba(2, 178, 5, 0.08); border-color: var(--brand-bright); color: var(--primary); font-weight: 600; }
+  .video-aviso.problema{ background: rgba(196, 0, 31, 0.06); border-color: var(--incorrect); }
+  .video-aviso .ghost-btn{ background: #fff; }
+
+  /* Opciones bloqueadas mientras no se vea el video completo */
+  .option.bloqueada{ opacity: 0.5; cursor: not-allowed; }
+
   .cert-placeholder{
     border: 1.5px dashed var(--accent);
     border-radius: 16px;
@@ -952,6 +972,7 @@
       <h2 class="card-title">Video de introducción</h2>
       <p class="card-subtitle">Antes de las preguntas, este video presenta el programa y el tema de la capacitación.</p>
       <div class="video-placeholder" data-video="introduccion" data-video-label="Espacio reservado para el video de introducción"></div>
+      <div class="video-aviso" id="avisoIntro" aria-live="polite" hidden></div>
       <button class="next-btn" id="introBtn">Continuar →</button>
     </section>
 
@@ -968,6 +989,7 @@
       <div class="video-placeholder" data-video="pregunta"></div>
 
       <h2 class="question" id="questionText"></h2>
+      <div class="video-aviso" id="avisoPregunta" aria-live="polite" hidden></div>
       <div class="options" id="optionsList"></div>
       <p class="feedback" id="feedback" aria-live="polite"></p>
       <button class="next-btn" id="nextBtn" disabled>Siguiente →</button>
@@ -978,6 +1000,7 @@
       <h2 class="card-title">Video de despedida</h2>
       <p class="card-subtitle">Completaste las 5 preguntas. Este video cierra la capacitación.</p>
       <div class="video-placeholder" data-video="despedida" data-video-label="Espacio reservado para el video de despedida"></div>
+      <div class="video-aviso" id="avisoDespedida" aria-live="polite" hidden></div>
       <button class="next-btn" id="outroBtn">Finalizar y ver certificado →</button>
     </section>
 
@@ -1136,6 +1159,7 @@
   const letters = ["A", "B", "C", "D"];
   let current = 0;
   let solved = false;
+  let vistos = new Set(); // videos vistos completos ("pregunta-2:ID_DE_YOUTUBE"); se guardan con el progreso
   let participant = { nombre: "", tipoDocumento: "", documento: "", telefono: "", correo: "" };
 
   // Progreso guardado en este dispositivo, para no perderlo si cierran la página
@@ -1143,7 +1167,7 @@
 
   function saveProgress(screen){
     try{
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ screen, participant, current }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ screen, participant, current, vistos: [...vistos] }));
     } catch(e){ /* localStorage no disponible (modo privado, etc.) — seguimos sin guardar */ }
   }
 
@@ -1168,30 +1192,216 @@
     return m ? m[1] : null;
   }
 
+  // ===== Videos =====
   // Con poca señal, el reproductor de YouTube (más de 1 MB) solo se carga cuando la persona toca el video.
   // Mientras tanto se muestra la miniatura (unos 15 KB) con el botón de reproducir.
-  function renderVideo(el, url, label, nombre){
-    const id = youtubeId(url);
-    el.classList.toggle("has-video", !!id);
-    if (id){
-      el.innerHTML = `
-        <button type="button" class="video-facade" aria-label="Reproducir ${nombre}">
-          <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" width="320" height="180" decoding="async">
-          <span class="play-circle" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#014A28"/></svg>
-          </span>
-          <span class="video-facade-texto" aria-hidden="true">Toca para ver el video</span>
-        </button>`;
-      const img = el.querySelector("img");
-      img.addEventListener("error", () => img.remove()); // sin miniatura queda el recuadro verde con el botón
-      el.querySelector(".video-facade").addEventListener("click", () => {
-        el.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1&autoplay=1"
-          title="${nombre.charAt(0).toUpperCase() + nombre.slice(1)}" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"></iframe>`;
-        el.querySelector("iframe").focus();
+  //
+  // Cada video con enlace debe verse completo antes de responder su pregunta o de continuar.
+  // Solo cuenta si se vio de principio a fin: lo que se salte adelantando con la barra no cuenta
+  // (retroceder sí se puede). Los videos sin enlace (pendientes) no bloquean nada.
+  const TOLERANCIA_S = 2; // margen para los saltos normales de la reproducción
+  const avisos = {
+    introduccion: document.getElementById("avisoIntro"),
+    pregunta: document.getElementById("avisoPregunta"),
+    despedida: document.getElementById("avisoDespedida")
+  };
+  const avisoEspecial = {}; // tipo -> true mientras se muestra un aviso de problema
+
+  // Clave del video de la pantalla ("introduccion", "pregunta" o "despedida"); null si no tiene enlace válido
+  function claveVideo(tipo){
+    const id = youtubeId(tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo]);
+    return id ? (tipo === "pregunta" ? `pregunta-${current + 1}` : tipo) + ":" + id : null;
+  }
+
+  function videoPendiente(tipo){
+    const clave = claveVideo(tipo);
+    return !!clave && !vistos.has(clave);
+  }
+
+  function mostrarAviso(tipo, clase, texto, boton){
+    const el = avisos[tipo];
+    el.className = "video-aviso" + (clase ? " " + clase : "");
+    el.textContent = "";
+    el.hidden = !texto;
+    if (!texto) return;
+    const span = document.createElement("span");
+    span.textContent = texto;
+    el.appendChild(span);
+    if (boton){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "ghost-btn ghost-btn--full";
+      b.textContent = boton.texto;
+      b.addEventListener("click", boton.accion);
+      el.appendChild(b);
+    }
+  }
+
+  function avisoProblema(tipo, texto, boton){
+    avisoEspecial[tipo] = true;
+    mostrarAviso(tipo, "problema", texto, boton);
+  }
+
+  // Aviso normal: pide ver el video, o confirma que ya se vio
+  function avisoNormal(tipo){
+    avisoEspecial[tipo] = false;
+    const clave = claveVideo(tipo);
+    if (!clave) return mostrarAviso(tipo, "", "");
+    const accion = tipo === "pregunta" ? "responder" : tipo === "introduccion" ? "continuar" : "terminar";
+    if (vistos.has(clave)){
+      mostrarAviso(tipo, "visto", tipo === "pregunta" ? "✓ Ya viste el video completo. Ahora responde la pregunta." : "✓ Ya viste el video completo. Ya puedes " + accion + ".");
+    } else {
+      mostrarAviso(tipo, "", `Mira el video completo para ${accion}.`);
+    }
+  }
+
+  // Bloquea o habilita las respuestas y los botones según el video de cada pantalla
+  function actualizarBloqueo(){
+    document.getElementById("introBtn").disabled = videoPendiente("introduccion");
+    document.getElementById("outroBtn").disabled = videoPendiente("despedida");
+    const preguntaBloqueada = videoPendiente("pregunta");
+    if (!solved){
+      [...optionsList.children].forEach(b => {
+        b.disabled = preguntaBloqueada;
+        b.classList.toggle("bloqueada", preguntaBloqueada);
       });
+    }
+    ["introduccion", "pregunta", "despedida"].forEach(tipo => { if (!avisoEspecial[tipo]) avisoNormal(tipo); });
+  }
+
+  function marcarVisto(clave, tipo){
+    vistos.add(clave);
+    if (["intro", "quiz", "outro"].includes(pantallaActual)) saveProgress(pantallaActual);
+    avisoEspecial[tipo] = false;
+    actualizarBloqueo();
+  }
+
+  // La API de YouTube (para saber si el video terminó) se carga solo la primera vez que se toca un video
+  let promesaApiYouTube = null;
+  function cargarApiYouTube(){
+    if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+    if (!promesaApiYouTube){
+      promesaApiYouTube = new Promise((resolve, reject) => {
+        const previo = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          if (typeof previo === "function") previo();
+          resolve(window.YT);
+        };
+        const script = document.createElement("script");
+        script.src = "https://www.youtube.com/iframe_api";
+        script.onerror = () => reject(new Error("No se pudo cargar YouTube"));
+        document.head.appendChild(script);
+        setTimeout(() => reject(new Error("YouTube tardó demasiado")), 60000);
+      }).catch(err => { promesaApiYouTube = null; throw err; });
+    }
+    return promesaApiYouTube;
+  }
+
+  // Detiene el reproductor y los controles de tiempo del recuadro (al cambiar de pantalla o de video)
+  function limpiarVideo(el){
+    const v = el._video;
+    if (!v) return;
+    clearInterval(v.timer);
+    clearTimeout(v.lento);
+    try{ if (v.player && v.player.destroy) v.player.destroy(); } catch(e){ /* ya no existe */ }
+    el._video = null;
+  }
+
+  // Cuánto del video se ha visto seguido. Si la posición avanza más de lo que permite el tiempo
+  // transcurrido (y la velocidad elegida), es un salto con la barra y no se cuenta.
+  function medirAvance(v){
+    const p = v.player;
+    if (!p || typeof p.getPlayerState !== "function") return;
+    if (p.getPlayerState() !== YT.PlayerState.PLAYING){ v.ultimoReloj = null; return; }
+    const t = p.getCurrentTime();
+    const ahora = Date.now();
+    const permitido = v.ultimoReloj ? (ahora - v.ultimoReloj) / 1000 * (p.getPlaybackRate() || 1) + TOLERANCIA_S : TOLERANCIA_S;
+    if (t <= v.maxVisto + permitido) v.maxVisto = Math.max(v.maxVisto, t);
+    v.ultimoReloj = ahora;
+  }
+
+  function alTerminarVideo(v, tipo, clave){
+    const p = v.player;
+    const duracion = p.getDuration();
+    const permitido = v.ultimoReloj ? (Date.now() - v.ultimoReloj) / 1000 * (p.getPlaybackRate() || 1) + TOLERANCIA_S : TOLERANCIA_S;
+    if (duracion > 0 && duracion <= v.maxVisto + permitido){
+      marcarVisto(clave, tipo);
       return;
     }
+    avisoProblema(tipo, "Parece que adelantaste el video. Para continuar, míralo completo.", {
+      texto: "Seguir viendo desde donde iba",
+      accion: () => { p.seekTo(v.maxVisto, true); p.playVideo(); avisoNormal(tipo); }
+    });
+  }
+
+  function reproducirVideo(el, id, nombre, tipo, clave){
+    limpiarVideo(el);
+    el.innerHTML = '<div class="yt-destino"></div>';
+    const v = { player: null, timer: null, lento: null, listo: false, maxVisto: 0, ultimoReloj: null };
+    el._video = v;
+    if (!vistos.has(clave)) avisoNormal(tipo);
+
+    const fallo = () => {
+      if (el._video !== v) return;
+      renderVideo(el, id, nombre, tipo); // vuelve a la miniatura
+      avisoProblema(tipo, "No se pudo cargar el video. Revisa tu conexión a internet o intenta en un lugar con mejor señal.", {
+        texto: "Intentar de nuevo",
+        accion: () => reproducirVideo(el, id, nombre, tipo, clave)
+      });
+    };
+    // Con poca señal puede tardar: se avisa sin interrumpir la carga
+    v.lento = setTimeout(() => {
+      if (el._video === v && !v.listo) avisoProblema(tipo, "El video está tardando en cargar. Si tienes poca señal, espera un momento o intenta en un lugar con mejor señal.");
+    }, 15000);
+
+    cargarApiYouTube().then(YT => {
+      if (el._video !== v) return; // la persona ya cambió de pantalla
+      v.player = new YT.Player(el.querySelector(".yt-destino"), {
+        host: "https://www.youtube-nocookie.com",
+        videoId: id,
+        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
+        events: {
+          onReady: e => {
+            v.listo = true;
+            clearTimeout(v.lento);
+            if (avisoEspecial[tipo]) avisoNormal(tipo);
+            const iframe = e.target.getIframe();
+            iframe.title = nombre.charAt(0).toUpperCase() + nombre.slice(1);
+            iframe.focus();
+            e.target.playVideo();
+          },
+          onStateChange: e => {
+            if (e.data === YT.PlayerState.PLAYING && v.ultimoReloj === null) v.ultimoReloj = Date.now();
+            if (e.data === YT.PlayerState.ENDED) alTerminarVideo(v, tipo, clave);
+          },
+          onError: fallo
+        }
+      });
+      v.timer = setInterval(() => medirAvance(v), 1000);
+    }).catch(fallo);
+  }
+
+  function renderVideo(el, id, nombre, tipo){
+    limpiarVideo(el);
+    el.classList.add("has-video");
+    const clave = claveVideo(tipo);
+    el.innerHTML = `
+      <button type="button" class="video-facade" aria-label="Reproducir ${nombre}">
+        <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" width="320" height="180" decoding="async">
+        <span class="play-circle" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#014A28"/></svg>
+        </span>
+        <span class="video-facade-texto" aria-hidden="true">Toca para ver el video</span>
+      </button>`;
+    const img = el.querySelector("img");
+    img.addEventListener("error", () => img.remove()); // sin miniatura queda el recuadro verde con el botón
+    el.querySelector(".video-facade").addEventListener("click", () => reproducirVideo(el, id, nombre, tipo, clave));
+  }
+
+  // Recuadro sin video: enlace pendiente o que no es de YouTube (no bloquea la pregunta)
+  function renderSinVideo(el, url, label){
+    limpiarVideo(el);
+    el.classList.remove("has-video");
     el.innerHTML = `
       <div class="play-circle">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -1203,18 +1413,19 @@
     `;
   }
 
-  // Los videos de pantallas ocultas se vacían, para que no sigan sonando de fondo
+  // Los videos de pantallas ocultas se detienen y se vacían, para que no sigan sonando de fondo
   function refreshVideos(){
     document.querySelectorAll(".video-placeholder[data-video]").forEach(el => {
-      if (el.closest("section").hidden){ el.innerHTML = ""; return; }
-      const key = el.dataset.video;
-      if (key === "pregunta"){
-        renderVideo(el, VIDEOS.preguntas[current], `Espacio reservado para el video de la pregunta ${current + 1}`,
-          `el video de la pregunta ${current + 1}`);
-      } else {
-        renderVideo(el, VIDEOS[key], el.dataset.videoLabel,
-          key === "introduccion" ? "el video de introducción" : "el video de despedida");
-      }
+      if (el.closest("section").hidden){ limpiarVideo(el); el.innerHTML = ""; return; }
+      const tipo = el.dataset.video === "pregunta" ? "pregunta" : el.dataset.video;
+      const url = tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo];
+      const nombre = tipo === "pregunta" ? `el video de la pregunta ${current + 1}`
+        : tipo === "introduccion" ? "el video de introducción" : "el video de despedida";
+      const label = tipo === "pregunta" ? `Espacio reservado para el video de la pregunta ${current + 1}` : el.dataset.videoLabel;
+      const id = youtubeId(url);
+      avisoEspecial[tipo] = false;
+      if (id) renderVideo(el, id, nombre, tipo);
+      else renderSinVideo(el, url, label);
     });
   }
 
@@ -1253,7 +1464,10 @@
     titulo.focus({ preventScroll: true });
   }
 
+  let pantallaActual = null;
+
   function showScreen(name){
+    pantallaActual = name;
     resumeCard.hidden = name !== "resume";
     registerCard.hidden = name !== "register";
     introCard.hidden = name !== "intro";
@@ -1262,6 +1476,7 @@
     outroCard.hidden = name !== "outro";
     doneCard.hidden = name !== "done";
     refreshVideos();
+    actualizarBloqueo();
     ajustarUnidadDiploma(); // el diploma solo tiene ancho cuando su pantalla está visible
     anunciarPantalla({ resume: resumeCard, register: registerCard, intro: introCard, quiz: quizCard, outro: outroCard, done: doneCard }[name]);
     if (name === "done") precargarPdf();
@@ -1404,6 +1619,7 @@
 
   // 2. Video introducción
   document.getElementById("introBtn").addEventListener("click", () => {
+    if (videoPendiente("introduccion")) return;
     current = 0;
     showScreen("quiz");
     renderQuestion();
@@ -1450,10 +1666,11 @@
       btn.addEventListener("click", () => selectOption(btn, opt));
       optionsList.appendChild(btn);
     });
+    actualizarBloqueo(); // opciones bloqueadas hasta ver el video completo
   }
 
   function selectOption(btn, opt){
-    if (solved) return;
+    if (solved || videoPendiente("pregunta")) return;
 
     if (opt.correct){
       solved = true;
@@ -1557,6 +1774,7 @@
   }
 
   document.getElementById("outroBtn").addEventListener("click", () => {
+    if (videoPendiente("despedida")) return;
     participant.fechaFin = new Date().toISOString();
     setDoneTitle();
     showScreen("done"); // queda guardado: al volver a abrir el enlace ve su certificado
@@ -1567,6 +1785,7 @@
   // No toca la cola de envíos a la hoja (COLA_KEY): lo pendiente se sigue enviando.
   function borrarDatosDelCelular(){
     intentoRegistro = false;
+    vistos = new Set();
     current = 0;
     participant = { nombre: "", tipoDocumento: "", documento: "", telefono: "", correo: "" };
     pendingResumeScreen = null;
@@ -1893,6 +2112,7 @@
     "Si esa persona quiere terminar después, tendrá que empezar de nuevo.");
 
   const saved = loadProgress();
+  if (saved && Array.isArray(saved.vistos)) vistos = new Set(saved.vistos); // videos ya vistos completos
   if (saved && saved.screen === "done" && saved.participant){
     // Ya terminó en este celular: mostrar directamente su certificado
     participant = saved.participant;
