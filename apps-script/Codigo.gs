@@ -1,5 +1,5 @@
 /**
- * Registro de la capacitación "Conservación del Agua"
+ * Registro de la capacitación "Importancia de la incidencia en el Páramo de Santurbán"
  * Programa de Gestión Integral del Recurso Hídrico — Alcaldía de Bucaramanga
  *
  * Recibe los envíos de la página (al registrarse y al terminar) y escribe una fila por persona
