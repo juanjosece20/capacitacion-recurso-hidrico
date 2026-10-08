@@ -24,7 +24,6 @@
 <meta name="theme-color" content="#016737">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://i.ytimg.com"><!-- miniaturas de los videos -->
 <!-- Las letras se cargan sin bloquear la primera pantalla: mientras llegan se usa la letra del celular -->
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
@@ -359,53 +358,15 @@
     .video-placeholder.has-video{ height: 0; padding-top: 56.25%; }
   }
 
-  .video-placeholder iframe{
+  .video-placeholder video{
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    border: 0;
+    background: #000;
+    object-fit: contain;
   }
-
-  /* Miniatura del video con botón de reproducir (el reproductor se carga solo al tocarla) */
-  .video-facade{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    font-family: inherit;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-  .video-facade img{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .video-facade .play-circle{ position: relative; width: 64px; height: 64px; transition: transform 0.15s ease; }
-  .video-facade:active .play-circle{ transform: scale(0.94); }
-  .video-facade-texto{
-    position: relative;
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(1, 40, 20, 0.78); /* texto blanco legible sobre cualquier miniatura */
-    color: #FFFFFF;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .video-facade:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
 
   /* Aviso del video: bloqueado hasta verlo completo, ya visto, adelantado o sin cargar */
   .video-aviso{
@@ -1068,19 +1029,18 @@
   const REGISTRO_URL = "https://script.google.com/macros/s/AKfycbwu1TVIOjePB-JDycj3Ysx1DaMj9CWpOrlJcIVs7cZOVHHD5-CHiqYo5xszrCasffU/exec";
 
   // ===== Videos de la capacitación =====
-  // Pega el enlace de YouTube (puede ser "no listado") tal como lo copias en YouTube:
-  // sirve "https://youtu.be/…", "https://www.youtube.com/watch?v=…" o "https://youtube.com/shorts/…".
+  // Archivos MP4 de la carpeta videos/ (H.264, 720p). La portada es el mismo nombre terminado en .jpg.
   // Mientras quede en "", se muestra el recuadro de "video pendiente".
   const VIDEOS = {
-    introduccion: "https://youtu.be/5Ixzf_vEVD8",
+    introduccion: "videos/presentacion.mp4",
     preguntas: [
-      "https://youtu.be/Uxs4SQmqDz8", // Pregunta 1: ahorrar agua en el hogar
-      "https://youtu.be/z2Ec6d4moCw", // Pregunta 2: agua dulce apta para el consumo
-      "https://youtu.be/tKr0GV6IWDo", // Pregunta 3: ríos, quebradas y páramos
-      "https://youtu.be/mJNbhVJhzgY", // Pregunta 4: fugas en el acueducto
-      "https://youtu.be/P11487qSomE"  // Pregunta 5: el recurso hídrico en Bucaramanga
+      "videos/pregunta-1.mp4", // Pregunta 1: ahorrar agua en el hogar
+      "videos/pregunta-2.mp4", // Pregunta 2: agua dulce apta para el consumo
+      "videos/pregunta-3.mp4", // Pregunta 3: ríos, quebradas y páramos
+      "videos/pregunta-4.mp4", // Pregunta 4: fugas en el acueducto
+      "videos/pregunta-5.mp4"  // Pregunta 5: el recurso hídrico en Bucaramanga
     ],
-    despedida: "https://youtu.be/kDC7gUq7VMI"
+    despedida: "videos/despedida.mp4"
   };
 
   const questions = [
@@ -1134,7 +1094,7 @@
   const letters = ["A", "B", "C", "D"];
   let current = 0;
   let solved = false;
-  let vistos = new Set(); // videos vistos completos ("pregunta-2:ID_DE_YOUTUBE"); se guardan con el progreso
+  let vistos = new Set(); // videos vistos completos ("pregunta-2:videos/pregunta-2.mp4"); se guardan con el progreso
   let participant = { nombre: "", tipoDocumento: "", documento: "", telefono: "", correo: "" };
 
   // Progreso guardado en este dispositivo, para no perderlo si cierran la página
@@ -1159,21 +1119,19 @@
 
   let pendingResumeScreen = null;
 
-  // Videos: toma el enlace de VIDEOS y lo muestra, o deja el recuadro de "pendiente"
-  function youtubeId(url){
-    const m = String(url || "").trim().match(
-      /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))([\w-]{11})/
-    );
-    return m ? m[1] : null;
+  // Videos: toma el archivo de VIDEOS y lo muestra, o deja el recuadro de "pendiente"
+  function archivoVideo(ruta){
+    const r = String(ruta || "").trim();
+    return /\.mp4$/i.test(r) ? r : null;
   }
 
   // ===== Videos =====
-  // Con poca señal, el reproductor de YouTube (más de 1 MB) solo se carga cuando la persona toca el video.
-  // Mientras tanto se muestra la miniatura (unos 15 KB) con el botón de reproducir.
+  // Con poca señal, el video no se descarga hasta que la persona toca reproducir:
+  // mientras tanto solo se ve la portada (unos 70 KB). El MP4 empieza a verse mientras baja.
   //
-  // Cada video con enlace debe verse completo antes de responder su pregunta o de continuar.
-  // Solo cuenta si se vio de principio a fin: lo que se salte adelantando con la barra no cuenta
-  // (retroceder sí se puede). Los videos sin enlace (pendientes) no bloquean nada.
+  // Cada video debe verse completo antes de responder su pregunta o de continuar.
+  // No se puede adelantar con la barra (vuelve a donde iba); retroceder sí se puede.
+  // Un video ya visto completo se puede mover libremente. Los videos pendientes no bloquean nada.
   const TOLERANCIA_S = 2; // margen para los saltos normales de la reproducción
   const avisos = {
     introduccion: document.getElementById("avisoIntro"),
@@ -1184,8 +1142,8 @@
 
   // Clave del video de la pantalla ("introduccion", "pregunta" o "despedida"); null si no tiene enlace válido
   function claveVideo(tipo){
-    const id = youtubeId(tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo]);
-    return id ? (tipo === "pregunta" ? `pregunta-${current + 1}` : tipo) + ":" + id : null;
+    const archivo = archivoVideo(tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo]);
+    return archivo ? (tipo === "pregunta" ? `pregunta-${current + 1}` : tipo) + ":" + archivo : null;
   }
 
   function videoPendiente(tipo){
@@ -1251,129 +1209,103 @@
     actualizarBloqueo();
   }
 
-  // La API de YouTube (para saber si el video terminó) se carga solo la primera vez que se toca un video
-  let promesaApiYouTube = null;
-  function cargarApiYouTube(){
-    if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
-    if (!promesaApiYouTube){
-      promesaApiYouTube = new Promise((resolve, reject) => {
-        const previo = window.onYouTubeIframeAPIReady;
-        window.onYouTubeIframeAPIReady = () => {
-          if (typeof previo === "function") previo();
-          resolve(window.YT);
-        };
-        const script = document.createElement("script");
-        script.src = "https://www.youtube.com/iframe_api";
-        script.onerror = () => reject(new Error("No se pudo cargar YouTube"));
-        document.head.appendChild(script);
-        setTimeout(() => reject(new Error("YouTube tardó demasiado")), 60000);
-      }).catch(err => { promesaApiYouTube = null; throw err; });
-    }
-    return promesaApiYouTube;
-  }
-
-  // Detiene el reproductor y los controles de tiempo del recuadro (al cambiar de pantalla o de video)
+  // Detiene el video del recuadro y corta su descarga (al cambiar de pantalla o de video)
   function limpiarVideo(el){
     const v = el._video;
     if (!v) return;
-    clearInterval(v.timer);
     clearTimeout(v.lento);
-    try{ if (v.player && v.player.destroy) v.player.destroy(); } catch(e){ /* ya no existe */ }
+    clearTimeout(v.avisoSalto);
     el._video = null;
+    try{
+      v.video.pause();
+      v.video.removeAttribute("src");
+      v.video.load(); // corta la descarga en curso
+    } catch(e){ /* ya no existe */ }
   }
 
-  // Cuánto del video se ha visto seguido. Si la posición avanza más de lo que permite el tiempo
-  // transcurrido (y la velocidad elegida), es un salto con la barra y no se cuenta.
-  function medirAvance(v){
-    const p = v.player;
-    if (!p || typeof p.getPlayerState !== "function") return;
-    if (p.getPlayerState() !== YT.PlayerState.PLAYING){ v.ultimoReloj = null; return; }
-    const t = p.getCurrentTime();
-    const ahora = Date.now();
-    const permitido = v.ultimoReloj ? (ahora - v.ultimoReloj) / 1000 * (p.getPlaybackRate() || 1) + TOLERANCIA_S : TOLERANCIA_S;
-    if (t <= v.maxVisto + permitido) v.maxVisto = Math.max(v.maxVisto, t);
-    v.ultimoReloj = ahora;
-  }
+  function renderVideo(el, archivo, nombre, tipo){
+    limpiarVideo(el);
+    el.classList.add("has-video");
+    el.innerHTML = "";
+    const clave = claveVideo(tipo);
 
-  function alTerminarVideo(v, tipo, clave){
-    const p = v.player;
-    const duracion = p.getDuration();
-    const permitido = v.ultimoReloj ? (Date.now() - v.ultimoReloj) / 1000 * (p.getPlaybackRate() || 1) + TOLERANCIA_S : TOLERANCIA_S;
-    if (duracion > 0 && duracion <= v.maxVisto + permitido){
-      marcarVisto(clave, tipo);
-      return;
-    }
-    avisoProblema(tipo, "Parece que adelantaste el video. Para continuar, míralo completo.", {
-      texto: "Seguir viendo desde donde iba",
-      accion: () => { p.seekTo(v.maxVisto, true); p.playVideo(); avisoNormal(tipo); }
+    const video = document.createElement("video");
+    video.src = archivo;
+    video.poster = archivo.replace(/\.mp4$/i, ".jpg");
+    video.preload = "none";   // nada se descarga hasta tocar reproducir
+    video.controls = true;
+    video.playsInline = true; // en iPhone se ve dentro de la página, sin abrir pantalla completa
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    video.setAttribute("controlslist", "nodownload noplaybackrate noremoteplayback");
+    video.disablePictureInPicture = true;
+    video.setAttribute("aria-label", nombre.charAt(0).toUpperCase() + nombre.slice(1));
+    el.appendChild(video);
+
+    const v = { video, maxVisto: 0, lento: null, avisoSalto: null, avisoLento: false };
+    el._video = v;
+    const libre = () => vistos.has(clave); // ya visto completo: se puede mover sin restricciones
+
+    // Cuánto se ha visto seguido: un salto hacia adelante no cuenta
+    video.addEventListener("timeupdate", () => {
+      if (libre() || video.seeking) return;
+      const t = video.currentTime;
+      if (t <= v.maxVisto + TOLERANCIA_S) v.maxVisto = Math.max(v.maxVisto, t);
+    });
+
+    // Adelantar con la barra: vuelve a donde iba (retroceder sí se puede)
+    video.addEventListener("seeking", () => {
+      if (libre() || video.currentTime <= v.maxVisto + TOLERANCIA_S) return;
+      video.currentTime = v.maxVisto;
+      avisoProblema(tipo, "El video no se puede adelantar. Sigue viéndolo desde donde ibas.");
+      clearTimeout(v.avisoSalto);
+      v.avisoSalto = setTimeout(() => { if (el._video === v && !libre()) avisoNormal(tipo); }, 6000);
+    });
+
+    video.addEventListener("ended", () => {
+      if (libre()) return;
+      if (video.duration > 0 && v.maxVisto + TOLERANCIA_S >= video.duration){
+        clearTimeout(v.avisoSalto);
+        marcarVisto(clave, tipo);
+        return;
+      }
+      avisoProblema(tipo, "Parece que adelantaste el video. Para continuar, míralo completo.", {
+        texto: "Seguir viendo desde donde iba",
+        accion: () => { video.currentTime = v.maxVisto; video.play().catch(() => {}); avisoNormal(tipo); }
+      });
+    });
+
+    // Con poca señal puede tardar: se avisa sin interrumpir la carga
+    video.addEventListener("waiting", () => {
+      clearTimeout(v.lento);
+      v.lento = setTimeout(() => {
+        if (el._video !== v) return;
+        v.avisoLento = true;
+        avisoProblema(tipo, "El video está tardando en cargar. Si tienes poca señal, espera un momento o intenta en un lugar con mejor señal.");
+      }, 15000);
+    });
+    video.addEventListener("playing", () => {
+      clearTimeout(v.lento);
+      if (v.avisoLento){ v.avisoLento = false; avisoNormal(tipo); }
+    });
+
+    video.addEventListener("error", () => {
+      if (el._video !== v) return; // error por haber quitado el video al cambiar de pantalla
+      clearTimeout(v.lento);
+      avisoProblema(tipo, "No se pudo cargar el video. Revisa tu conexión a internet o intenta en un lugar con mejor señal.", {
+        texto: "Intentar de nuevo",
+        accion: () => {
+          const desde = v.maxVisto;
+          avisoNormal(tipo);
+          video.load();
+          video.addEventListener("loadedmetadata", () => { video.currentTime = desde; }, { once: true });
+          video.play().catch(() => {});
+        }
+      });
     });
   }
 
-  function reproducirVideo(el, id, nombre, tipo, clave){
-    limpiarVideo(el);
-    el.innerHTML = '<div class="yt-destino"></div>';
-    const v = { player: null, timer: null, lento: null, listo: false, maxVisto: 0, ultimoReloj: null };
-    el._video = v;
-    if (!vistos.has(clave)) avisoNormal(tipo);
-
-    const fallo = () => {
-      if (el._video !== v) return;
-      renderVideo(el, id, nombre, tipo); // vuelve a la miniatura
-      avisoProblema(tipo, "No se pudo cargar el video. Revisa tu conexión a internet o intenta en un lugar con mejor señal.", {
-        texto: "Intentar de nuevo",
-        accion: () => reproducirVideo(el, id, nombre, tipo, clave)
-      });
-    };
-    // Con poca señal puede tardar: se avisa sin interrumpir la carga
-    v.lento = setTimeout(() => {
-      if (el._video === v && !v.listo) avisoProblema(tipo, "El video está tardando en cargar. Si tienes poca señal, espera un momento o intenta en un lugar con mejor señal.");
-    }, 15000);
-
-    cargarApiYouTube().then(YT => {
-      if (el._video !== v) return; // la persona ya cambió de pantalla
-      v.player = new YT.Player(el.querySelector(".yt-destino"), {
-        host: "https://www.youtube-nocookie.com",
-        videoId: id,
-        playerVars: { autoplay: 1, playsinline: 1, rel: 0 },
-        events: {
-          onReady: e => {
-            v.listo = true;
-            clearTimeout(v.lento);
-            if (avisoEspecial[tipo]) avisoNormal(tipo);
-            const iframe = e.target.getIframe();
-            iframe.title = nombre.charAt(0).toUpperCase() + nombre.slice(1);
-            iframe.focus();
-            e.target.playVideo();
-          },
-          onStateChange: e => {
-            if (e.data === YT.PlayerState.PLAYING && v.ultimoReloj === null) v.ultimoReloj = Date.now();
-            if (e.data === YT.PlayerState.ENDED) alTerminarVideo(v, tipo, clave);
-          },
-          onError: fallo
-        }
-      });
-      v.timer = setInterval(() => medirAvance(v), 1000);
-    }).catch(fallo);
-  }
-
-  function renderVideo(el, id, nombre, tipo){
-    limpiarVideo(el);
-    el.classList.add("has-video");
-    const clave = claveVideo(tipo);
-    el.innerHTML = `
-      <button type="button" class="video-facade" aria-label="Reproducir ${nombre}">
-        <img src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt="" width="320" height="180" decoding="async">
-        <span class="play-circle" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#014A28"/></svg>
-        </span>
-        <span class="video-facade-texto" aria-hidden="true">Toca para ver el video</span>
-      </button>`;
-    const img = el.querySelector("img");
-    img.addEventListener("error", () => img.remove()); // sin miniatura queda el recuadro verde con el botón
-    el.querySelector(".video-facade").addEventListener("click", () => reproducirVideo(el, id, nombre, tipo, clave));
-  }
-
-  // Recuadro sin video: enlace pendiente o que no es de YouTube (no bloquea la pregunta)
+  // Recuadro sin video: archivo pendiente o que no es MP4 (no bloquea la pregunta)
   function renderSinVideo(el, url, label){
     limpiarVideo(el);
     el.classList.remove("has-video");
@@ -1384,7 +1316,7 @@
         </svg>
       </div>
       <p>${label}</p>
-      <p class="small">${url ? "(el enlace no se reconoce como video de YouTube)" : "(pendiente por cargar)"}</p>
+      <p class="small">${url ? "(el archivo no es un video MP4)" : "(pendiente por cargar)"}</p>
     `;
   }
 
@@ -1397,9 +1329,9 @@
       const nombre = tipo === "pregunta" ? `el video de la pregunta ${current + 1}`
         : tipo === "introduccion" ? "el video de introducción" : "el video de despedida";
       const label = tipo === "pregunta" ? `Espacio reservado para el video de la pregunta ${current + 1}` : el.dataset.videoLabel;
-      const id = youtubeId(url);
+      const archivo = archivoVideo(url);
       avisoEspecial[tipo] = false;
-      if (id) renderVideo(el, id, nombre, tipo);
+      if (archivo) renderVideo(el, archivo, nombre, tipo);
       else renderSinVideo(el, url, label);
     });
   }
