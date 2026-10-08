@@ -455,6 +455,10 @@
   .video-play[hidden]{ display: none; }
   .video-play.en-pausa{ bottom: 48px; }
   .video-play-circulo{
+    position: absolute;
+    left: 50%;
+    top: 72%; /* a la altura del pecho: la cara de la portada queda libre */
+    transform: translate(-50%, -50%);
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -466,7 +470,7 @@
     transition: transform 0.15s ease;
   }
   .video-play-circulo svg{ width: 34px; height: 34px; margin-left: 5px; /* centra ópticamente el triángulo */ }
-  .video-play:active .video-play-circulo{ transform: scale(0.94); }
+  .video-play:active .video-play-circulo{ transform: translate(-50%, -50%) scale(0.94); }
   .video-play:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
 
   .video-placeholder video{
@@ -973,7 +977,7 @@
 
     <!-- Bienvenida -->
     <section class="card card-first welcome-card" id="welcomeCard">
-      <h2 class="card-title">Importancia de la incidencia en el Páramo de Santurbán</h2>
+      <h2 class="card-title">Bienvenido(a) al curso</h2>
       <p class="welcome-datos">Curso de unos 5 minutos · 7 videos cortos · 5 preguntas · Certificado al final</p>
       <button class="next-btn" id="welcomeBtn">Empezar →</button>
     </section>
@@ -1155,6 +1159,8 @@
 
   // ===== Videos de la capacitación =====
   // Archivos MP4 de la carpeta videos/ (H.264, 720p). La portada es el mismo nombre terminado en .jpg.
+  // Si se cambian las portadas, subir VERSION_PORTADAS para que los celulares no muestren las guardadas.
+  const VERSION_PORTADAS = "2";
   // Mientras quede en "", se muestra el recuadro de "video pendiente".
   const VIDEOS = {
     introduccion: "videos/presentacion.mp4",
@@ -1401,7 +1407,7 @@
     const v = { video: null, maxVisto: 0, lento: null, avisoSalto: null, avisoLento: false, controles: null };
     const video = document.createElement("video");
     video.src = archivo;
-    video.poster = archivo.replace(/\.mp4$/i, ".jpg");
+    video.poster = archivo.replace(/\.mp4$/i, ".jpg") + "?v=" + VERSION_PORTADAS;
     video.preload = "none";   // nada se descarga hasta tocar reproducir
     video.controls = true;
     video.playsInline = true; // en iPhone se ve dentro de la página, sin abrir pantalla completa
