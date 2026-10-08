@@ -204,6 +204,14 @@
     margin-bottom: 6px;
   }
 
+  .welcome-card .card-title{ font-size: 1.45rem; line-height: 1.25; margin-bottom: 12px; }
+  .welcome-datos{
+    margin: 0 0 22px;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
   .card-subtitle{
     color: var(--ink-soft);
     font-size: 1rem;
@@ -754,6 +762,7 @@
     margin: 16px 0 4px;
     font-size: 1rem;
     font-weight: 500;
+    line-height: 1.5;
   }
 
   .feedback.ok{ color: var(--correct); }
@@ -962,8 +971,15 @@
       </div>
     </section>
 
+    <!-- Bienvenida -->
+    <section class="card card-first welcome-card" id="welcomeCard">
+      <h2 class="card-title">Importancia de la incidencia en el Páramo de Santurbán</h2>
+      <p class="welcome-datos">Curso de unos 5 minutos · 7 videos cortos · 5 preguntas · Certificado al final</p>
+      <button class="next-btn" id="welcomeBtn">Empezar →</button>
+    </section>
+
     <!-- 1. Registro -->
-    <section class="card card-first" id="registerCard">
+    <section class="card card-first" id="registerCard" hidden>
       <h2 class="card-title">Antes de comenzar</h2>
       <p class="card-subtitle">Regístrate para participar en la capacitación. Tus datos se usarán para certificar tu participación.</p>
 
@@ -1155,6 +1171,7 @@
   const questions = [
     {
       text: "¿Cómo funciona el suelo del Páramo de Santurbán?",
+      explicacion: "Correcto. El suelo del páramo absorbe el agua de la lluvia y la neblina, y la va soltando poco a poco, incluso en temporadas secas.",
       options: [
         { text: "Como una roca que no deja pasar el agua", correct: false },
         { text: "Como una esponja que absorbe el agua y la suelta poco a poco", correct: true },
@@ -1164,6 +1181,7 @@
     },
     {
       text: "Según la ley colombiana, ¿qué actividades están prohibidas en los páramos?",
+      explicacion: "Correcto. En Colombia la minería y la ganadería están prohibidas en los páramos, aunque en municipios como Vetas y Suratá aún se realizan.",
       options: [
         { text: "Sembrar árboles nativos", correct: false },
         { text: "Hacer turismo ecológico", correct: false },
@@ -1173,6 +1191,7 @@
     },
     {
       text: "¿A qué ríos alimentan las quebradas de Bucaramanga?",
+      explicacion: "Correcto. Las quebradas de Bucaramanga alimentan el río de Oro y el Suratá, que juntos forman el río Lebrija.",
       options: [
         { text: "Al río de Oro y al Suratá", correct: true },
         { text: "Al Magdalena y al Cauca", correct: false },
@@ -1182,6 +1201,7 @@
     },
     {
       text: "Además del ambiente, ¿a quiénes beneficia proteger las quebradas?",
+      explicacion: "Correcto. Proteger las quebradas también beneficia a las familias que viven de la pesca aguas abajo.",
       options: [
         { text: "Solo a los turistas", correct: false },
         { text: "A las empresas de construcción", correct: false },
@@ -1191,6 +1211,7 @@
     },
     {
       text: "¿Por qué importa tanto la delimitación del páramo?",
+      explicacion: "Correcto. Lo que queda dentro de la delimitación tiene reglas de protección estrictas; lo que queda afuera puede quedar expuesto.",
       options: [
         { text: "Porque define dónde se puede construir más", correct: false },
         { text: "Porque lo que queda adentro tiene reglas de protección estrictas", correct: true },
@@ -1577,6 +1598,7 @@
   }
 
   // Screens
+  const welcomeCard = document.getElementById("welcomeCard");
   const resumeCard = document.getElementById("resumeCard");
   const registerCard = document.getElementById("registerCard");
   const introCard = document.getElementById("introCard");
@@ -1615,6 +1637,7 @@
 
   function showScreen(name){
     pantallaActual = name;
+    welcomeCard.hidden = name !== "welcome";
     resumeCard.hidden = name !== "resume";
     registerCard.hidden = name !== "register";
     introCard.hidden = name !== "intro";
@@ -1625,7 +1648,7 @@
     refreshVideos();
     actualizarBloqueo();
     ajustarUnidadDiploma(); // el diploma solo tiene ancho cuando su pantalla está visible
-    anunciarPantalla({ resume: resumeCard, register: registerCard, intro: introCard, quiz: quizCard, outro: outroCard, done: doneCard }[name]);
+    anunciarPantalla({ welcome: welcomeCard, resume: resumeCard, register: registerCard, intro: introCard, quiz: quizCard, outro: outroCard, done: doneCard }[name]);
     if (name === "done") precargarPdf();
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -1815,7 +1838,7 @@
     if (opt.correct){
       solved = true;
       btn.classList.add("correct");
-      feedback.textContent = "¡Correcto! Puedes continuar.";
+      feedback.textContent = questions[current].explicacion || "¡Correcto! Puedes continuar.";
       feedback.className = "feedback ok";
       nextBtn.disabled = false;
       [...optionsList.children].forEach(b => b.disabled = true);
@@ -2241,7 +2264,7 @@
         cerrar();
         confirmar.disabled = false;
         confirmar.textContent = "Sí, empezar de nuevo";
-        showScreen("register");
+        showScreen("welcome");
       }
     });
   }
@@ -2253,6 +2276,8 @@
   prepararOtraPersona("resumeOtherBtn", "resumeOtherPanel", () =>
     `Se borrará de este celular el avance de ${nombreAnterior()}. ` +
     "Si esa persona quiere terminar después, tendrá que empezar de nuevo.");
+
+  document.getElementById("welcomeBtn").addEventListener("click", () => showScreen("register"));
 
   const saved = loadProgress();
   if (saved && Array.isArray(saved.vistos)) vistos = new Set(saved.vistos); // videos ya vistos completos
@@ -2267,7 +2292,7 @@
     pendingResumeScreen = saved.screen;
     showScreen("resume");
   } else {
-    showScreen("register");
+    showScreen("welcome");
   }
 </script>
 
