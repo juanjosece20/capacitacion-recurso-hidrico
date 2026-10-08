@@ -359,7 +359,64 @@
     .video-placeholder.has-video{ height: 0; padding-top: 56.25%; }
   }
 
-  /* Subtítulos: letra grande, blanca sobre negro casi opaco (contraste alto también al sol) */
+  /* Subtítulos dibujados por la página sobre el video (estilo YouTube):
+     abajo y centrados, fondo negro semitransparente solo detrás de cada línea.
+     Suben cuando están visibles los controles nativos para no taparlos. */
+  .subtitulos{
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    bottom: 7%;
+    z-index: 1;
+    text-align: center;
+    pointer-events: none;
+    transition: bottom 0.2s ease;
+  }
+  .controles-visibles .subtitulos{ bottom: 60px; }
+  .en-pausa .subtitulos{ visibility: hidden; } /* en pausa el botón de play ocuparía el mismo espacio */
+  .subtitulo-linea{
+    font-family: 'Work Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #FFFFFF;
+    background: rgba(0, 0, 0, 0.75);
+    padding: 1px 7px;
+    -webkit-box-decoration-break: clone; /* si una línea se parte, cada pedazo lleva su fondo */
+    box-decoration-break: clone;
+  }
+
+  /* Botón CC para activar o desactivar los subtítulos */
+  .video-cc{
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+    min-width: 44px;
+    min-height: 36px;
+    padding: 4px 8px;
+    border: 2px solid #FFFFFF;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.65);
+    color: #FFFFFF;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+  .video-cc[aria-pressed="false"]{
+    border-style: dashed;
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: line-through;
+  }
+  .video-cc:focus-visible{ outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  @media (min-width: 760px){
+    .subtitulo-linea{ font-size: 20px; }
+  }
+
+  /* Pantalla completa nativa: ahí se usan los subtítulos del navegador */
   .video-placeholder video::cue{
     font-family: 'Work Sans', sans-serif;
     font-size: 0.95rem; /* ~15 px: dos renglones de hasta 32 letras caben en el video de un celular */
@@ -376,7 +433,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1291,11 +1348,16 @@
   }
 
   // Detiene el video del recuadro y corta su descarga (al cambiar de pantalla o de video)
+  // Subtítulos activados o no (botón CC); se recuerda en este celular. Activados por defecto.
+  let subtitulosActivos = true;
+  try{ subtitulosActivos = localStorage.getItem("capacitacion_subtitulos") !== "no"; } catch(e){ /* sin almacenamiento */ }
+
   function limpiarVideo(el){
     const v = el._video;
     if (!v) return;
     clearTimeout(v.lento);
     clearTimeout(v.avisoSalto);
+    clearTimeout(v.controles);
     el._video = null;
     try{
       v.video.pause();
@@ -1310,6 +1372,7 @@
     el.innerHTML = "";
     const clave = claveVideo(tipo);
 
+    const v = { video: null, maxVisto: 0, lento: null, avisoSalto: null, avisoLento: false, controles: null };
     const video = document.createElement("video");
     video.src = archivo;
     video.poster = archivo.replace(/\.mp4$/i, ".jpg");
@@ -1322,16 +1385,79 @@
     video.disablePictureInPicture = true;
     video.setAttribute("aria-label", nombre.charAt(0).toUpperCase() + nombre.slice(1));
 
-    // Subtítulos en español (mismo nombre terminado en .vtt), activados desde el inicio
+    // Subtítulos en español (mismo nombre terminado en .vtt). La pista queda oculta ("hidden"):
+    // la página dibuja el texto ella misma, más grande y legible que el del navegador.
     const pista = document.createElement("track");
     pista.kind = "captions";
     pista.srclang = "es";
     pista.label = "Español";
     pista.src = archivo.replace(/\.mp4$/i, ".vtt");
-    pista.default = true;
     video.appendChild(pista);
     el.appendChild(video);
-    if (pista.track) pista.track.mode = "showing";
+    pista.track.mode = "hidden";
+
+    const subtitulos = document.createElement("div");
+    subtitulos.className = "subtitulos";
+    subtitulos.setAttribute("aria-hidden", "true"); // el video ya tiene la pista para lectores de pantalla
+    el.appendChild(subtitulos);
+
+    let empezo = false; // sobre la portada no se muestran subtítulos
+    function pintarSubtitulos(){
+      subtitulos.textContent = "";
+      if (!subtitulosActivos || !empezo) return;
+      const activos = pista.track.activeCues || [];
+      for (let i = 0; i < activos.length; i++){
+        activos[i].text.split("\n").forEach((linea, j) => {
+          if (j || i) subtitulos.appendChild(document.createElement("br"));
+          const span = document.createElement("span");
+          span.className = "subtitulo-linea";
+          span.textContent = linea;
+          subtitulos.appendChild(span);
+        });
+      }
+    }
+    pista.track.addEventListener("cuechange", pintarSubtitulos);
+
+    // En pantalla completa nativa la página no puede dibujar encima: ahí se usan los del navegador
+    let pantallaCompletaIOS = false;
+    function ajustarModoPista(){
+      const completa = pantallaCompletaIOS || document.fullscreenElement === video || document.webkitFullscreenElement === video;
+      pista.track.mode = completa && subtitulosActivos ? "showing" : "hidden";
+    }
+    ["fullscreenchange", "webkitfullscreenchange"].forEach(ev => video.addEventListener(ev, ajustarModoPista));
+    video.addEventListener("webkitbeginfullscreen", () => { pantallaCompletaIOS = true; ajustarModoPista(); });
+    video.addEventListener("webkitendfullscreen", () => { pantallaCompletaIOS = false; ajustarModoPista(); });
+
+    // Botón CC
+    const botonCC = document.createElement("button");
+    botonCC.type = "button";
+    botonCC.className = "video-cc";
+    botonCC.textContent = "CC";
+    const pintarCC = () => {
+      botonCC.setAttribute("aria-pressed", subtitulosActivos ? "true" : "false");
+      botonCC.setAttribute("aria-label", subtitulosActivos ? "Subtítulos activados: tocar para quitarlos" : "Subtítulos desactivados: tocar para activarlos");
+    };
+    pintarCC();
+    botonCC.addEventListener("click", () => {
+      subtitulosActivos = !subtitulosActivos;
+      try{ localStorage.setItem("capacitacion_subtitulos", subtitulosActivos ? "si" : "no"); } catch(e){ /* sin almacenamiento */ }
+      pintarCC();
+      pintarSubtitulos();
+      ajustarModoPista();
+    });
+    el.appendChild(botonCC);
+
+    // Los controles nativos se ven en pausa y unos 3 segundos después de tocar el video:
+    // mientras tanto los subtítulos suben para no taparlos
+    function controlesVisibles(){
+      el.classList.add("controles-visibles");
+      clearTimeout(v.controles);
+      if (!video.paused) v.controles = setTimeout(() => el.classList.remove("controles-visibles"), 3000);
+    }
+    el.classList.add("controles-visibles");
+    ["pointerdown", "pointermove", "touchstart"].forEach(ev => el.addEventListener(ev, controlesVisibles, { passive: true }));
+    video.addEventListener("play", () => { empezo = true; el.classList.remove("en-pausa"); pintarSubtitulos(); controlesVisibles(); });
+    video.addEventListener("pause", () => { el.classList.add("en-pausa"); controlesVisibles(); });
 
     // Botón de play grande: se oculta al reproducir y vuelve si el video se pausa o termina
     const botonPlay = document.createElement("button");
@@ -1347,7 +1473,7 @@
       botonPlay.hidden = false;
     });
 
-    const v = { video, maxVisto: 0, lento: null, avisoSalto: null, avisoLento: false };
+    v.video = video;
     el._video = v;
     const libre = () => vistos.has(clave); // ya visto completo: se puede mover sin restricciones
 
