@@ -9,8 +9,11 @@
  * enviarle datos. Por eso aquí se valida todo de nuevo, se limita la cantidad de envíos y se
  * usa un candado para que dos envíos al mismo tiempo no se pisen.
  *
+ * También responde consultas ("¿este documento ya se registró?") para que la página ofrezca
+ * continuar o recuperar el certificado. Solo devuelve datos si el celular coincide con el registrado.
+ *
  * Instalación: pegar este código en Extensiones > Apps Script de la hoja, ejecutar una vez
- * configurarHoja() y publicar como aplicación web (ver instrucciones en la conversación).
+ * configurarHoja() y luego instalarRespaldoSemanal(), y publicar como aplicación web.
  */
 
 // ===== Ajustes =====
@@ -32,6 +35,10 @@ const COL = {
   fechaRegistro: 1, nombre: 2, tipoDocumento: 3, documento: 4, celular: 5,
   correo: 6, estado: 7, fechaFin: 8, codigo: 9
 };
+// Respaldo automático: copia de la hoja cada semana en esta carpeta de tu Drive
+const CARPETA_RESPALDOS = "Respaldos - Capacitación Páramo de Santurbán";
+const MAX_RESPALDOS = 8;               // se conservan las 8 copias más recientes (unos 2 meses)
+
 const ESTADO_REGISTRADO = "Registrado";
 const ESTADO_TERMINADO = "Terminado";
 
@@ -49,6 +56,13 @@ function doPost(e) {
       return responder_(false, "Formato inválido");
     }
 
+    // Campo trampa (honeypot): invisible para las personas; si llega lleno, lo llenó un robot.
+    // Se responde como si todo estuviera bien, pero no se guarda nada.
+    if (datos && typeof datos === "object" && String(datos.web || "").trim() !== "") {
+      console.warn("Envío descartado por el campo trampa");
+      return datos.tipo === "consulta" ? responderDatos_({ ok: true, estado: "nuevo" }) : responder_(true, ESTADO_REGISTRADO);
+    }
+
     const v = validar_(datos);
     if (v.error) return responder_(false, v.error);
 
@@ -58,6 +72,7 @@ function doPost(e) {
     try {
       const limite = revisarLimites_(v.tipoDocumento + v.documento);
       if (limite) return responder_(false, limite.mensaje, limite.reintentar);
+      if (v.tipo === "consulta") return responderDatos_(consultar_(v));
       const estado = guardar_(v);
       if (!estado) return responder_(false, "Se alcanzó el máximo de registros");
       return responder_(true, estado);
@@ -83,7 +98,7 @@ function validar_(d) {
   if (!d || typeof d !== "object") return { error: "Datos inválidos" };
 
   const tipo = d.tipo;
-  if (tipo !== "registro" && tipo !== "fin") return { error: "Tipo de envío inválido" };
+  if (tipo !== "registro" && tipo !== "fin" && tipo !== "consulta") return { error: "Tipo de envío inválido" };
 
   const nombre = limpiarTexto_(d.nombre);
   if (nombre.length < 3 || nombre.length > 80) return { error: "Nombre inválido" }; // más largo no cabe en el certificado
@@ -198,6 +213,27 @@ function guardar_(v) {
   return terminado ? ESTADO_TERMINADO : ESTADO_REGISTRADO;
 }
 
+// ¿Ya existe este documento? Solo si el celular coincide se devuelven el nombre y el estado,
+// para que nadie pueda ver el certificado de otra persona con solo saber su número de documento.
+function consultar_(v) {
+  const hoja = obtenerHojaRegistros_();
+  const fila = buscarFila_(hoja, v.tipoDocumento, v.documento);
+  if (!fila) return { ok: true, estado: "nuevo" };
+
+  const rango = hoja.getRange(fila, 1, 1, ENCABEZADOS.length);
+  const texto = rango.getDisplayValues()[0];
+  const valores = rango.getValues()[0];
+  if (texto[COL.celular - 1] !== v.celular) return { ok: true, estado: "otros-datos" };
+
+  const fechaFin = valores[COL.fechaFin - 1];
+  return {
+    ok: true,
+    estado: texto[COL.estado - 1] === ESTADO_TERMINADO ? ESTADO_TERMINADO : ESTADO_REGISTRADO,
+    nombre: texto[COL.nombre - 1],
+    fechaFin: fechaFin instanceof Date ? fechaFin.toISOString() : null
+  };
+}
+
 function buscarFila_(hoja, tipoDocumento, documento) {
   const ultima = hoja.getLastRow();
   if (ultima < 2) return 0;
@@ -268,8 +304,43 @@ function configurarHoja() {
 }
 
 
+// ===== Respaldo automático semanal en tu Drive =====
+// Ejecutar UNA vez instalarRespaldoSemanal() desde el editor: deja programada la copia cada lunes
+// entre las 6 y las 7 de la mañana. Se puede volver a ejecutar sin que se dupliquen las copias.
+function instalarRespaldoSemanal() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === "respaldoSemanal")
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger("respaldoSemanal")
+    .timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(6).inTimezone(ZONA_HORARIA)
+    .create();
+  respaldoSemanal(); // primera copia de una vez, para comprobar que funciona
+  console.log("Respaldo semanal programado (lunes, 6 a. m.)");
+}
+
+// Copia la hoja completa en la carpeta CARPETA_RESPALDOS y borra (a la papelera) las más viejas.
+// La copia queda solo en tu Drive: no hereda los permisos de la hoja original.
+function respaldoSemanal() {
+  const archivo = DriveApp.getFileById(libro_().getId());
+  const carpetas = DriveApp.getFoldersByName(CARPETA_RESPALDOS);
+  const carpeta = carpetas.hasNext() ? carpetas.next() : DriveApp.createFolder(CARPETA_RESPALDOS);
+  const fecha = Utilities.formatDate(new Date(), ZONA_HORARIA, "yyyy-MM-dd");
+  archivo.makeCopy("Respaldo " + fecha + " - " + archivo.getName(), carpeta);
+
+  const copias = [];
+  const it = carpeta.getFiles();
+  while (it.hasNext()) copias.push(it.next());
+  copias.sort((a, b) => b.getDateCreated() - a.getDateCreated());
+  copias.slice(MAX_RESPALDOS).forEach(c => c.setTrashed(true));
+}
+
+
 // ===== Respuesta a la página =====
 // reintentar = true le indica a la página que guarde el envío y lo intente más tarde
+function responderDatos_(datos) {
+  return ContentService.createTextOutput(JSON.stringify(datos)).setMimeType(ContentService.MimeType.JSON);
+}
+
 function responder_(ok, mensaje, reintentar) {
   const cuerpo = ok ? { ok: true, estado: mensaje } : { ok: false, error: mensaje, reintentar: !!reintentar };
   return ContentService.createTextOutput(JSON.stringify(cuerpo)).setMimeType(ContentService.MimeType.JSON);

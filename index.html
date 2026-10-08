@@ -869,6 +869,7 @@
     text-align: left;
   }
   .confirm-panel[hidden]{ display: none; }
+  .campo-trampa{ position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
   .confirm-title{ margin: 0 0 6px; font-weight: 600; color: var(--ink); }
   .confirm-title:focus{ outline: none; }
   h2[tabindex="-1"]:focus{ outline: none; }
@@ -1054,6 +1055,19 @@
 
       <!-- Si falta algo al tocar "Comenzar", aquí se explica qué (se lee en voz alta con lectores de pantalla) -->
       <div class="form-error" id="registerError" role="alert" hidden></div>
+
+      <!-- Campo trampa contra robots: las personas no lo ven ni llegan a él con el teclado -->
+      <div class="campo-trampa" aria-hidden="true">
+        <label for="fWeb">No llenes este campo</label>
+        <input type="text" id="fWeb" name="web" tabindex="-1" autocomplete="off">
+      </div>
+
+      <!-- Si el documento ya estaba registrado: continuar el curso o ver el certificado -->
+      <div class="confirm-panel" id="registroExistente" hidden>
+        <p class="confirm-title" id="existenteTitulo" tabindex="-1"></p>
+        <p class="confirm-text" id="existenteTexto"></p>
+        <button class="next-btn" id="existenteBtn" hidden></button>
+      </div>
 
       <button class="next-btn" id="registerBtn">Comenzar capacitación →</button>
     </section>
@@ -1823,9 +1837,99 @@
       correo: fCorreo.value.trim().toLowerCase(),
       fechaRegistro: new Date().toISOString()
     };
+    revisarRegistroExistente();
+  });
+
+  // ¿Este documento ya se registró? Si la hoja responde que sí (y el celular coincide), se ofrece
+  // continuar o ver el certificado en vez de registrarlo de nuevo. Sin internet o si tarda, se sigue normal:
+  // la hoja de todas formas nunca crea dos filas para el mismo documento.
+  const ESPERA_CONSULTA_MS = 6000;
+  const registroExistente = document.getElementById("registroExistente");
+  const existenteBtn = document.getElementById("existenteBtn");
+  let accionExistente = null;
+
+  async function consultarRegistro(p){
+    if (!REGISTRO_URL || navigator.onLine === false) return null;
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const limite = setTimeout(() => ctrl && ctrl.abort(), ESPERA_CONSULTA_MS);
+    try{
+      const resp = await fetch(REGISTRO_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          tipo: "consulta", nombre: p.nombre, tipoDocumento: p.tipoDocumento, documento: p.documento,
+          telefono: p.telefono, correo: p.correo, consentimiento: true,
+          web: document.getElementById("fWeb").value
+        }),
+        signal: ctrl ? ctrl.signal : undefined
+      });
+      const r = await resp.json();
+      return r && r.ok ? r : null;
+    } catch(e){
+      return null; // sin respuesta: se sigue como registro nuevo
+    } finally {
+      clearTimeout(limite);
+    }
+  }
+
+  function mostrarExistente(titulo, texto, boton, accion){
+    document.getElementById("existenteTitulo").textContent = titulo;
+    document.getElementById("existenteTexto").textContent = texto;
+    existenteBtn.hidden = !boton;
+    existenteBtn.textContent = boton || "";
+    accionExistente = accion || null;
+    registroExistente.hidden = false;
+    registroExistente.scrollIntoView({ block: "center", behavior: "smooth" });
+    document.getElementById("existenteTitulo").focus({ preventScroll: true });
+  }
+
+  function empezarCurso(){
     showScreen("intro");
     registrarEnvio("registro");
-  });
+  }
+
+  async function revisarRegistroExistente(){
+    registroExistente.hidden = true;
+    const textoBoton = registerBtn.textContent;
+    registerBtn.disabled = true;
+    registerBtn.textContent = "Revisando tus datos…";
+    let r;
+    try{
+      r = await consultarRegistro(participant);
+    } finally {
+      registerBtn.disabled = false;
+      registerBtn.textContent = textoBoton;
+    }
+    if (!r || r.estado === "nuevo") return empezarCurso();
+
+    if (r.estado === "otros-datos"){
+      return mostrarExistente(
+        "Este documento ya está registrado",
+        "Se registró con otro número de celular. Si es tu documento, escribe el mismo celular que usaste la primera vez."
+      );
+    }
+    // Ya existe y el celular coincide: se usa el nombre con el que se registró
+    if (r.nombre) participant.nombre = r.nombre;
+    if (r.estado === "Terminado" && r.fechaFin){
+      mostrarExistente(
+        "Ya terminaste este curso",
+        `${participant.nombre}, ya completaste la capacitación con este documento. Puedes ver y descargar tu certificado.`,
+        "Ver mi certificado →",
+        () => { participant.fechaFin = r.fechaFin; setDoneTitle(); showScreen("done"); }
+      );
+    } else {
+      mostrarExistente(
+        "Ya te habías registrado",
+        `${participant.nombre}, ya tienes un registro con este documento. Puedes continuar el curso sin registrarte de nuevo.`,
+        "Continuar el curso →",
+        () => showScreen("intro")
+      );
+    }
+  }
+
+  existenteBtn.addEventListener("click", () => { if (accionExistente) accionExistente(); });
+  // Si cambian el documento o el celular, el aviso anterior ya no aplica
+  [fDocumento, fTelefono, fTipoDoc].forEach(el => el.addEventListener("input", () => { registroExistente.hidden = true; }));
 
   // 2. Video introducción
   document.getElementById("introBtn").addEventListener("click", () => {
@@ -2204,7 +2308,8 @@
       telefono: p.telefono,
       correo: p.correo,
       consentimiento: true,
-      fechaRegistro: p.fechaRegistro || null
+      fechaRegistro: p.fechaRegistro || null,
+      web: document.getElementById("fWeb").value // campo trampa: vacío para las personas
     };
     if (tipo === "fin"){
       envio.fechaFin = p.fechaFin;
