@@ -359,6 +359,15 @@
     .video-placeholder.has-video{ height: 0; padding-top: 56.25%; }
   }
 
+  /* Subtítulos: letra grande, blanca sobre negro casi opaco (contraste alto también al sol) */
+  .video-placeholder video::cue{
+    font-family: 'Work Sans', sans-serif;
+    font-size: 0.95rem; /* ~15 px: dos renglones de hasta 32 letras caben en el video de un celular */
+    line-height: 1.35;
+    color: #FFFFFF;
+    background: rgba(0, 0, 0, 0.82);
+  }
+
   /* Botón de play grande sobre la portada: toda la portada se puede tocar.
      Si se pausa a mitad del video, deja libre la barra de controles nativos (abajo). */
   .video-play{
@@ -1312,7 +1321,17 @@
     video.setAttribute("controlslist", "nodownload noplaybackrate noremoteplayback");
     video.disablePictureInPicture = true;
     video.setAttribute("aria-label", nombre.charAt(0).toUpperCase() + nombre.slice(1));
+
+    // Subtítulos en español (mismo nombre terminado en .vtt), activados desde el inicio
+    const pista = document.createElement("track");
+    pista.kind = "captions";
+    pista.srclang = "es";
+    pista.label = "Español";
+    pista.src = archivo.replace(/\.mp4$/i, ".vtt");
+    pista.default = true;
+    video.appendChild(pista);
     el.appendChild(video);
+    if (pista.track) pista.track.mode = "showing";
 
     // Botón de play grande: se oculta al reproducir y vuelve si el video se pausa o termina
     const botonPlay = document.createElement("button");
