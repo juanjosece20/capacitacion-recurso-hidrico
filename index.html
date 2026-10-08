@@ -198,7 +198,7 @@
   /* Cada pantalla es una hoja de la libreta: sin tarjeta, sin sombra */
   .card{ padding: 22px 0 0; }
 
-  /* Número del paso: "01 Registro" */
+  /* Etiqueta del paso: "Registro", "Certificado" */
   .paso-num{
     display: flex;
     align-items: baseline;
@@ -211,14 +211,6 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-soft);
-  }
-  .paso-num span{
-    font-family: 'Fraunces', serif;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1;
-    letter-spacing: 0;
-    color: var(--primary);
   }
 
   .card-title{
@@ -939,7 +931,7 @@
 
     <!-- 1. Registro -->
     <section class="card" id="registerCard">
-      <p class="paso-num"><span>01</span>Registro</p>
+      <p class="paso-num">Registro</p>
       <h2 class="card-title">Antes de comenzar</h2>
       <p class="card-subtitle">Regístrate para participar en la capacitación. Tus datos se usarán para certificar tu participación.</p>
 
@@ -1022,7 +1014,7 @@
 
     <!-- 5. Certificado -->
     <section class="card done-card" id="doneCard" hidden>
-      <p class="paso-num"><span>05</span>Certificado</p>
+      <p class="paso-num">Certificado</p>
       <h2 id="doneTitle">¡Completaste la capacitación!</h2>
       <p>Respondiste correctamente las 5 preguntas sobre el Páramo de Santurbán.</p>
       <div class="diploma-frame">
