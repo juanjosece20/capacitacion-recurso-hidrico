@@ -1142,59 +1142,59 @@
   const VIDEOS = {
     introduccion: "videos/presentacion.mp4",
     preguntas: [
-      "videos/pregunta-1.mp4", // Pregunta 1: ahorrar agua en el hogar
-      "videos/pregunta-2.mp4", // Pregunta 2: agua dulce apta para el consumo
-      "videos/pregunta-3.mp4", // Pregunta 3: ríos, quebradas y páramos
-      "videos/pregunta-4.mp4", // Pregunta 4: fugas en el acueducto
-      "videos/pregunta-5.mp4"  // Pregunta 5: el recurso hídrico en Bucaramanga
+      "videos/pregunta-1.mp4", // Pregunta 1: el suelo del páramo como esponja
+      "videos/pregunta-2.mp4", // Pregunta 2: minería y ganadería en los páramos
+      "videos/pregunta-3.mp4", // Pregunta 3: las quebradas y los ríos de Oro y Suratá
+      "videos/pregunta-4.mp4", // Pregunta 4: a quiénes beneficia proteger las quebradas
+      "videos/pregunta-5.mp4"  // Pregunta 5: la delimitación del páramo
     ],
     despedida: "videos/despedida.mp4"
   };
 
   const questions = [
     {
-      text: "¿Cuál de las siguientes acciones ayuda más a ahorrar agua en el hogar?",
+      text: "¿Cómo funciona el suelo del Páramo de Santurbán?",
       options: [
-        { text: "Dejar la llave abierta mientras te cepillas los dientes", correct: false },
-        { text: "Cerrar la llave mientras te cepillas los dientes", correct: true },
-        { text: "Bañarte con la manguera del jardín", correct: false },
-        { text: "Lavar el carro con la manguera abierta todo el tiempo", correct: false }
+        { text: "Como una roca que no deja pasar el agua", correct: false },
+        { text: "Como una esponja que absorbe el agua y la suelta poco a poco", correct: true },
+        { text: "Como un desierto que se seca en verano", correct: false },
+        { text: "Como un río que corre bajo la tierra", correct: false }
       ]
     },
     {
-      text: "¿Qué porcentaje aproximado del agua dulce del planeta es apta para el consumo humano?",
+      text: "Según la ley colombiana, ¿qué actividades están prohibidas en los páramos?",
       options: [
-        { text: "Menos del 1%", correct: true },
-        { text: "El 50%", correct: false },
-        { text: "El 25%", correct: false },
-        { text: "El 75%", correct: false }
+        { text: "Sembrar árboles nativos", correct: false },
+        { text: "Hacer turismo ecológico", correct: false },
+        { text: "La minería y la ganadería", correct: true },
+        { text: "Investigar la biodiversidad", correct: false }
       ]
     },
     {
-      text: "¿Cuál de estas prácticas ayuda a conservar los ríos, quebradas y páramos?",
+      text: "¿A qué ríos alimentan las quebradas de Bucaramanga?",
       options: [
-        { text: "Talar los árboles cerca de los ríos", correct: false },
-        { text: "Verter químicos en las quebradas", correct: false },
-        { text: "Proteger y reforestar las zonas cercanas a las fuentes de agua", correct: true },
-        { text: "Construir sin control cerca de los nacimientos de agua", correct: false }
+        { text: "Al río de Oro y al Suratá", correct: true },
+        { text: "Al Magdalena y al Cauca", correct: false },
+        { text: "Al Chicamocha y al Sogamoso", correct: false },
+        { text: "Al Fonce y al Suárez", correct: false }
       ]
     },
     {
-      text: "Si ves una fuga o daño en una tubería del acueducto en tu barrio, ¿qué deberías hacer?",
+      text: "Además del ambiente, ¿a quiénes beneficia proteger las quebradas?",
       options: [
-        { text: "Ignorarlo, no es tu problema", correct: false },
-        { text: "Reportarlo a la empresa de acueducto o a la autoridad ambiental", correct: true },
-        { text: "Esperar a que otra persona lo reporte", correct: false },
-        { text: "Taparlo con tierra", correct: false }
+        { text: "Solo a los turistas", correct: false },
+        { text: "A las empresas de construcción", correct: false },
+        { text: "A nadie en particular", correct: false },
+        { text: "A las familias que viven de la pesca aguas abajo", correct: true }
       ]
     },
     {
-      text: "¿Por qué es importante cuidar el recurso hídrico en Bucaramanga y su área metropolitana?",
+      text: "¿Por qué importa tanto la delimitación del páramo?",
       options: [
-        { text: "Porque el agua es un recurso infinito", correct: false },
-        { text: "Porque garantiza agua potable para las próximas generaciones", correct: true },
-        { text: "Porque no afecta a la comunidad", correct: false },
-        { text: "Porque solo importa para la agricultura", correct: false }
+        { text: "Porque define dónde se puede construir más", correct: false },
+        { text: "Porque lo que queda adentro tiene reglas de protección estrictas", correct: true },
+        { text: "Porque marca los límites entre municipios", correct: false },
+        { text: "Porque decide quién es dueño del agua", correct: false }
       ]
     }
   ];
@@ -1348,6 +1348,10 @@
   }
 
   // Detiene el video del recuadro y corta su descarga (al cambiar de pantalla o de video)
+  // Subtítulos: desactivados por ahora. Para volver a mostrarlos (con el botón CC), cambiar a true.
+  // Los archivos .vtt siguen en la carpeta videos/.
+  const SUBTITULOS_HABILITADOS = false;
+
   // Subtítulos activados o no (botón CC); se recuerda en este celular. Activados por defecto.
   let subtitulosActivos = true;
   try{ subtitulosActivos = localStorage.getItem("capacitacion_subtitulos") !== "no"; } catch(e){ /* sin almacenamiento */ }
@@ -1385,79 +1389,83 @@
     video.disablePictureInPicture = true;
     video.setAttribute("aria-label", nombre.charAt(0).toUpperCase() + nombre.slice(1));
 
-    // Subtítulos en español (mismo nombre terminado en .vtt). La pista queda oculta ("hidden"):
-    // la página dibuja el texto ella misma, más grande y legible que el del navegador.
-    const pista = document.createElement("track");
-    pista.kind = "captions";
-    pista.srclang = "es";
-    pista.label = "Español";
-    pista.src = archivo.replace(/\.mp4$/i, ".vtt");
-    video.appendChild(pista);
-    el.appendChild(video);
-    pista.track.mode = "hidden";
+    if (SUBTITULOS_HABILITADOS){
+      // Subtítulos en español (mismo nombre terminado en .vtt). La pista queda oculta ("hidden"):
+      // la página dibuja el texto ella misma, más grande y legible que el del navegador.
+      const pista = document.createElement("track");
+      pista.kind = "captions";
+      pista.srclang = "es";
+      pista.label = "Español";
+      pista.src = archivo.replace(/\.mp4$/i, ".vtt");
+      video.appendChild(pista);
+      el.appendChild(video);
+      pista.track.mode = "hidden";
 
-    const subtitulos = document.createElement("div");
-    subtitulos.className = "subtitulos";
-    subtitulos.setAttribute("aria-hidden", "true"); // el video ya tiene la pista para lectores de pantalla
-    el.appendChild(subtitulos);
+      const subtitulos = document.createElement("div");
+      subtitulos.className = "subtitulos";
+      subtitulos.setAttribute("aria-hidden", "true"); // el video ya tiene la pista para lectores de pantalla
+      el.appendChild(subtitulos);
 
-    let empezo = false; // sobre la portada no se muestran subtítulos
-    function pintarSubtitulos(){
-      subtitulos.textContent = "";
-      if (!subtitulosActivos || !empezo) return;
-      const activos = pista.track.activeCues || [];
-      for (let i = 0; i < activos.length; i++){
-        activos[i].text.split("\n").forEach((linea, j) => {
-          if (j || i) subtitulos.appendChild(document.createElement("br"));
-          const span = document.createElement("span");
-          span.className = "subtitulo-linea";
-          span.textContent = linea;
-          subtitulos.appendChild(span);
-        });
+      let empezo = false; // sobre la portada no se muestran subtítulos
+      function pintarSubtitulos(){
+        subtitulos.textContent = "";
+        if (!subtitulosActivos || !empezo) return;
+        const activos = pista.track.activeCues || [];
+        for (let i = 0; i < activos.length; i++){
+          activos[i].text.split("\n").forEach((linea, j) => {
+            if (j || i) subtitulos.appendChild(document.createElement("br"));
+            const span = document.createElement("span");
+            span.className = "subtitulo-linea";
+            span.textContent = linea;
+            subtitulos.appendChild(span);
+          });
+        }
       }
-    }
-    pista.track.addEventListener("cuechange", pintarSubtitulos);
+      pista.track.addEventListener("cuechange", pintarSubtitulos);
 
-    // En pantalla completa nativa la página no puede dibujar encima: ahí se usan los del navegador
-    let pantallaCompletaIOS = false;
-    function ajustarModoPista(){
-      const completa = pantallaCompletaIOS || document.fullscreenElement === video || document.webkitFullscreenElement === video;
-      pista.track.mode = completa && subtitulosActivos ? "showing" : "hidden";
-    }
-    ["fullscreenchange", "webkitfullscreenchange"].forEach(ev => video.addEventListener(ev, ajustarModoPista));
-    video.addEventListener("webkitbeginfullscreen", () => { pantallaCompletaIOS = true; ajustarModoPista(); });
-    video.addEventListener("webkitendfullscreen", () => { pantallaCompletaIOS = false; ajustarModoPista(); });
+      // En pantalla completa nativa la página no puede dibujar encima: ahí se usan los del navegador
+      let pantallaCompletaIOS = false;
+      function ajustarModoPista(){
+        const completa = pantallaCompletaIOS || document.fullscreenElement === video || document.webkitFullscreenElement === video;
+        pista.track.mode = completa && subtitulosActivos ? "showing" : "hidden";
+      }
+      ["fullscreenchange", "webkitfullscreenchange"].forEach(ev => video.addEventListener(ev, ajustarModoPista));
+      video.addEventListener("webkitbeginfullscreen", () => { pantallaCompletaIOS = true; ajustarModoPista(); });
+      video.addEventListener("webkitendfullscreen", () => { pantallaCompletaIOS = false; ajustarModoPista(); });
 
-    // Botón CC
-    const botonCC = document.createElement("button");
-    botonCC.type = "button";
-    botonCC.className = "video-cc";
-    botonCC.textContent = "CC";
-    const pintarCC = () => {
-      botonCC.setAttribute("aria-pressed", subtitulosActivos ? "true" : "false");
-      botonCC.setAttribute("aria-label", subtitulosActivos ? "Subtítulos activados: tocar para quitarlos" : "Subtítulos desactivados: tocar para activarlos");
-    };
-    pintarCC();
-    botonCC.addEventListener("click", () => {
-      subtitulosActivos = !subtitulosActivos;
-      try{ localStorage.setItem("capacitacion_subtitulos", subtitulosActivos ? "si" : "no"); } catch(e){ /* sin almacenamiento */ }
+      // Botón CC
+      const botonCC = document.createElement("button");
+      botonCC.type = "button";
+      botonCC.className = "video-cc";
+      botonCC.textContent = "CC";
+      const pintarCC = () => {
+        botonCC.setAttribute("aria-pressed", subtitulosActivos ? "true" : "false");
+        botonCC.setAttribute("aria-label", subtitulosActivos ? "Subtítulos activados: tocar para quitarlos" : "Subtítulos desactivados: tocar para activarlos");
+      };
       pintarCC();
-      pintarSubtitulos();
-      ajustarModoPista();
-    });
-    el.appendChild(botonCC);
+      botonCC.addEventListener("click", () => {
+        subtitulosActivos = !subtitulosActivos;
+        try{ localStorage.setItem("capacitacion_subtitulos", subtitulosActivos ? "si" : "no"); } catch(e){ /* sin almacenamiento */ }
+        pintarCC();
+        pintarSubtitulos();
+        ajustarModoPista();
+      });
+      el.appendChild(botonCC);
 
-    // Los controles nativos se ven en pausa y unos 3 segundos después de tocar el video:
-    // mientras tanto los subtítulos suben para no taparlos
-    function controlesVisibles(){
+      // Los controles nativos se ven en pausa y unos 3 segundos después de tocar el video:
+      // mientras tanto los subtítulos suben para no taparlos
+      function controlesVisibles(){
+        el.classList.add("controles-visibles");
+        clearTimeout(v.controles);
+        if (!video.paused) v.controles = setTimeout(() => el.classList.remove("controles-visibles"), 3000);
+      }
       el.classList.add("controles-visibles");
-      clearTimeout(v.controles);
-      if (!video.paused) v.controles = setTimeout(() => el.classList.remove("controles-visibles"), 3000);
+      ["pointerdown", "pointermove", "touchstart"].forEach(ev => el.addEventListener(ev, controlesVisibles, { passive: true }));
+      video.addEventListener("play", () => { empezo = true; el.classList.remove("en-pausa"); pintarSubtitulos(); controlesVisibles(); });
+      video.addEventListener("pause", () => { el.classList.add("en-pausa"); controlesVisibles(); });
+    } else {
+      el.appendChild(video);
     }
-    el.classList.add("controles-visibles");
-    ["pointerdown", "pointermove", "touchstart"].forEach(ev => el.addEventListener(ev, controlesVisibles, { passive: true }));
-    video.addEventListener("play", () => { empezo = true; el.classList.remove("en-pausa"); pintarSubtitulos(); controlesVisibles(); });
-    video.addEventListener("pause", () => { el.classList.add("en-pausa"); controlesVisibles(); });
 
     // Botón de play grande: se oculta al reproducir y vuelve si el video se pausa o termina
     const botonPlay = document.createElement("button");
