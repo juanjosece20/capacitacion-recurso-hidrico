@@ -991,7 +991,7 @@
       <div class="form-row">
         <div class="form-group">
           <label for="fTelefono">Teléfono celular</label>
-          <input type="tel" id="fTelefono" inputmode="numeric" autocomplete="tel-national" aria-describedby="hintTelefono" maxlength="10" placeholder="Ej.: 3001234567">
+          <input type="tel" id="fTelefono" inputmode="numeric" autocomplete="tel" aria-describedby="hintTelefono" maxlength="16" placeholder="Ej.: 3001234567">
           <p class="field-hint" id="hintTelefono">10 dígitos y debe empezar por 3.</p>
         </div>
         <div class="form-group">
@@ -1088,7 +1088,6 @@
             <p class="diploma-program" id="dipProgram"></p>
           </div>
           <div class="diploma-logo-card">
-            <img class="diploma-logo" id="diplomaLogo" alt="Alcaldía de Bucaramanga — Secretaría de Salud y Ambiente">
           </div>
 
           <div class="diploma-body">
@@ -1654,8 +1653,11 @@
   fDocumento.addEventListener("input", () => {
     fDocumento.value = fDocumento.value.replace(/\D/g, "").slice(0, 11);
   });
+  // Solo dígitos, máximo 10. Si el celular autocompleta con el indicativo (+57 300 123 4567), se quita el 57.
   fTelefono.addEventListener("input", () => {
-    fTelefono.value = fTelefono.value.replace(/\D/g, "").slice(0, 10);
+    let d = fTelefono.value.replace(/\D/g, "");
+    if (d.length > 10 && d.startsWith("57")) d = d.slice(2);
+    fTelefono.value = d.slice(0, 10);
   });
 
   function isNombreValido(v){ const n = v.trim().length; return n >= 3 && n <= 80; }
@@ -1877,8 +1879,15 @@
 
   function renderDiploma(){
     const logo = document.querySelector(".logo-badge img");
-    const dipLogo = document.getElementById("diplomaLogo");
-    if (logo && !dipLogo.src) dipLogo.src = logo.src;
+    // El logo del certificado se crea aquí, copiando el del encabezado (así no se repite la imagen en el HTML)
+    if (logo && !document.getElementById("diplomaLogo")){
+      const dipLogo = document.createElement("img");
+      dipLogo.className = "diploma-logo";
+      dipLogo.id = "diplomaLogo";
+      dipLogo.alt = "Alcaldía de Bucaramanga — Secretaría de Salud y Ambiente";
+      dipLogo.src = logo.src;
+      document.querySelector(".diploma-logo-card").appendChild(dipLogo);
+    }
 
     document.getElementById("dipName").textContent = participant.nombre || "Nombre del participante";
     const tipo = participant.tipoDocumento === "TI" ? "T.I." : "C.C.";
