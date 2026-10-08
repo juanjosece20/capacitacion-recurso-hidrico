@@ -152,6 +152,41 @@
   .frailejon .hoja{ stroke-width: 1.4; fill: var(--card-bg); }
   .frailejon .tronco{ stroke-width: 1.1; }
 
+  /* Franja compacta: en todos los pasos menos el registro, solo logo y título corto */
+  .titulo-corto{ display: none; }
+
+  .compacto .cabecera-inner{
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .compacto .logo-badge{ margin: 0; padding-right: 14px; border-right: 1px solid var(--border); }
+  .compacto .logo-badge img{ height: 36px; }
+  .compacto .eyebrow,
+  .compacto .frailejon{ display: none; }
+  /* El título completo sigue ahí para lectores de pantalla */
+  .compacto .cabecera h1{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .compacto .titulo-corto{
+    display: block;
+    margin: 0;
+    font-family: 'Fraunces', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--primary-dark);
+  }
+  .compacto .topo{ top: -120px; }
+
   /* ===== Contenido: una sola columna, alineada a la izquierda ===== */
   .wrap{
     max-width: 640px;
@@ -825,29 +860,8 @@
   .confirm-panel .next-btn{ margin-top: 14px; }
   .confirm-panel .download-status{ margin: 8px 0 0; }
 
-  .dev-btn{
-    display: block;
-    width: 100%;
-    margin-bottom: 22px;
-    padding: 10px 14px;
-    background: transparent;
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radio);
-    color: var(--ink-soft);
-    font-family: inherit;
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
-  }
-
-  .dev-btn:hover{ border-color: var(--accent); color: var(--primary); }
-
   .next-btn:focus-visible,
-  .ghost-btn:focus-visible,
-  .dev-btn:focus-visible{
+  .ghost-btn:focus-visible{
     outline: 3px solid var(--accent);
     outline-offset: 2px;
   }
@@ -891,6 +905,7 @@
       </div>
       <p class="eyebrow">Programa de Gestión Integral del Recurso Hídrico</p>
       <h1>Importancia de la incidencia en el Páramo de Santurbán</h1>
+      <p class="titulo-corto" aria-hidden="true">Páramo de Santurbán</p>
       <!-- Frailejón dibujado a línea (decorativo) -->
       <svg class="frailejon" viewBox="0 0 100 130" aria-hidden="true" focusable="false"><path class="tronco" d="M41 50L42 128M59 50L58 128M45 54l-2 7M45 54l2 7M51 54l-2 7M51 54l2 7M57 54l-2 7M57 54l2 7M42 60l-2 7M42 60l2 7M48 60l-2 7M48 60l2 7M54 60l-2 7M54 60l2 7M45 66l-2 7M45 66l2 7M51 66l-2 7M51 66l2 7M57 66l-2 7M57 66l2 7M42 72l-2 7M42 72l2 7M48 72l-2 7M48 72l2 7M54 72l-2 7M54 72l2 7M45 78l-2 7M45 78l2 7M51 78l-2 7M51 78l2 7M57 78l-2 7M57 78l2 7M42 84l-2 7M42 84l2 7M48 84l-2 7M48 84l2 7M54 84l-2 7M54 84l2 7M45 90l-2 7M45 90l2 7M51 90l-2 7M51 90l2 7M57 90l-2 7M57 90l2 7M42 96l-2 7M42 96l2 7M48 96l-2 7M48 96l2 7M54 96l-2 7M54 96l2 7M45 102l-2 7M45 102l2 7M51 102l-2 7M51 102l2 7M57 102l-2 7M57 102l2 7M42 108l-2 7M42 108l2 7M48 108l-2 7M48 108l2 7M54 108l-2 7M54 108l2 7M45 114l-2 7M45 114l2 7M51 114l-2 7M51 114l2 7M57 114l-2 7M57 114l2 7M42 120l-2 7M42 120l2 7M48 120l-2 7M48 120l2 7M54 120l-2 7M54 120l2 7"/><path class="hoja" d="M50 46Q37 45 25 55Q41 55 50 46M50 46Q37 42 22 48Q38 53 50 46M50 46Q38 38 22 41Q36 49 50 46M50 46Q40 35 22 33Q35 45 50 46M50 46Q43 33 26 26Q36 41 50 46M50 46Q47 32 33 21Q38 38 50 46M50 46Q50 31 39 17Q40 35 50 46M50 46Q54 30 47 11Q43 31 50 46M50 46Q58 33 56 14Q47 31 50 46M50 46Q61 36 63 18Q51 31 50 46M50 46Q64 38 72 20Q56 31 50 46M50 46Q64 43 75 28Q58 34 50 46M50 46Q65 46 79 35Q61 36 50 46M50 46Q63 50 79 43Q62 39 50 46M50 46Q62 54 78 51Q64 43 50 46"/><path class="hoja" d="M50 48Q44 41 33 42Q41 49 50 48M50 48Q46 39 34 35Q40 46 50 48M50 48Q49 37 39 29Q41 42 50 48M50 48Q53 38 47 28Q44 40 50 48M50 48Q56 39 54 27Q47 38 50 48M50 48Q59 42 60 30Q51 38 50 48M50 48Q59 46 64 36Q53 39 50 48M50 48Q60 49 70 41Q57 41 50 48"/></svg>
     </div>
@@ -927,8 +942,6 @@
       <p class="paso-num"><span>01</span>Registro</p>
       <h2 class="card-title">Antes de comenzar</h2>
       <p class="card-subtitle">Regístrate para participar en la capacitación. Tus datos se usarán para certificar tu participación.</p>
-
-      <button type="button" class="dev-btn" id="fillTestBtn">Modo prueba — rellenar formulario</button>
 
       <div class="form-group">
         <label for="fNombre">Nombre completo</label>
@@ -979,7 +992,6 @@
 
     <!-- 2. Video introducción (sin pregunta) -->
     <section class="card" id="introCard" hidden>
-      <p class="paso-num"><span>02</span>Presentación</p>
       <h2 class="card-title">Video de introducción</h2>
       <p class="card-subtitle">Antes de las preguntas, este video presenta el programa y el tema de la capacitación.</p>
       <div class="video-placeholder" data-video="introduccion" data-video-label="Espacio reservado para el video de introducción"></div>
@@ -990,7 +1002,6 @@
     <!-- 3. Preguntas -->
 
     <section class="card" id="quizCard" hidden>
-      <p class="paso-num"><span>03</span>Preguntas</p>
       <div class="video-placeholder" data-video="pregunta"></div>
 
       <h2 class="question" id="questionText"></h2>
@@ -1002,7 +1013,6 @@
 
     <!-- 4. Video despedida (sin pregunta) -->
     <section class="card" id="outroCard" hidden>
-      <p class="paso-num"><span>04</span>Despedida</p>
       <h2 class="card-title">Video de despedida</h2>
       <p class="card-subtitle">Completaste las 5 preguntas. Este video cierra la capacitación.</p>
       <div class="video-placeholder" data-video="despedida" data-video-label="Espacio reservado para el video de despedida"></div>
@@ -1014,7 +1024,7 @@
     <section class="card done-card" id="doneCard" hidden>
       <p class="paso-num"><span>05</span>Certificado</p>
       <h2 id="doneTitle">¡Completaste la capacitación!</h2>
-      <p>Respondiste correctamente las 5 preguntas sobre conservación del agua.</p>
+      <p>Respondiste correctamente las 5 preguntas sobre el Páramo de Santurbán.</p>
       <div class="diploma-frame">
         <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
           <div class="diploma-banda">
@@ -1088,7 +1098,6 @@
         <button class="ghost-btn ghost-btn--full ghost-btn--alerta" data-otra-confirmar>Sí, empezar de nuevo</button>
         <button class="ghost-btn ghost-btn--full" data-otra-cancelar>Cancelar</button>
       </div>
-      <button class="ghost-btn" id="restartBtn">Reiniciar demostración</button>
     </section>
 
   </main>
@@ -1475,6 +1484,7 @@
 
   function showScreen(name){
     pantallaActual = name;
+    document.body.classList.toggle("compacto", name !== "register"); // encabezado grande solo en el registro
     resumeCard.hidden = name !== "resume";
     registerCard.hidden = name !== "register";
     introCard.hidden = name !== "intro";
@@ -1590,16 +1600,6 @@
   });
   fConsent.addEventListener("change", validateForm);
 
-  document.getElementById("fillTestBtn").addEventListener("click", () => {
-    fNombre.value = "Laura Ramírez Gómez";
-    fTipoDoc.value = "CC";
-    fDocumento.value = "1098765432";
-    fTelefono.value = "3001234567";
-    fCorreo.value = "prueba@correo.com";
-    fConsent.checked = true;
-    touched.add("fNombre"); touched.add("fDocumento"); touched.add("fTelefono"); touched.add("fCorreo");
-    validateForm();
-  });
 
   const fTipoDoc = document.getElementById("fTipoDoc");
 
@@ -1818,10 +1818,6 @@
   }
 
   // 5. Reiniciar demo
-  document.getElementById("restartBtn").addEventListener("click", () => {
-    borrarDatosDelCelular();
-    showScreen("register");
-  });
 
   // 0. Retomar progreso guardado
   document.getElementById("resumeContinueBtn").addEventListener("click", () => {
