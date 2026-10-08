@@ -359,6 +359,41 @@
     .video-placeholder.has-video{ height: 0; padding-top: 56.25%; }
   }
 
+  /* Botón de play grande sobre la portada: toda la portada se puede tocar.
+     Si se pausa a mitad del video, deja libre la barra de controles nativos (abajo). */
+  .video-play{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .video-play[hidden]{ display: none; }
+  .video-play.en-pausa{ bottom: 48px; }
+  .video-play-circulo{
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+    transition: transform 0.15s ease;
+  }
+  .video-play-circulo svg{ width: 34px; height: 34px; margin-left: 5px; /* centra ópticamente el triángulo */ }
+  .video-play:active .video-play-circulo{ transform: scale(0.94); }
+  .video-play:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
+
   .video-placeholder video{
     position: absolute;
     top: 0;
@@ -1273,6 +1308,20 @@
     video.disablePictureInPicture = true;
     video.setAttribute("aria-label", nombre.charAt(0).toUpperCase() + nombre.slice(1));
     el.appendChild(video);
+
+    // Botón de play grande: se oculta al reproducir y vuelve si el video se pausa o termina
+    const botonPlay = document.createElement("button");
+    botonPlay.type = "button";
+    botonPlay.className = "video-play";
+    botonPlay.setAttribute("aria-label", "Reproducir " + nombre);
+    botonPlay.innerHTML = '<span class="video-play-circulo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 3.5L20 12L6 20.5Z" fill="#014A28"/></svg></span>';
+    botonPlay.addEventListener("click", () => { video.play().catch(() => {}); });
+    el.appendChild(botonPlay);
+    video.addEventListener("play", () => { botonPlay.hidden = true; });
+    video.addEventListener("pause", () => {
+      botonPlay.classList.add("en-pausa"); // ya empezó: los controles nativos de abajo quedan libres
+      botonPlay.hidden = false;
+    });
 
     const v = { video, maxVisto: 0, lento: null, avisoSalto: null, avisoLento: false };
     el._video = v;
