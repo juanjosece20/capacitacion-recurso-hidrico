@@ -471,6 +471,9 @@
   }
   .video-play-circulo svg{ width: 34px; height: 34px; margin-left: 5px; /* centra ópticamente el triángulo */ }
   .video-play:active .video-play-circulo{ transform: translate(-50%, -50%) scale(0.94); }
+  /* En pausa (ya empezó): centrado en el área libre encima de los controles, y un poco más pequeño */
+  .video-play.en-pausa .video-play-circulo{ top: 50%; width: 64px; height: 64px; }
+  .video-play.en-pausa .video-play-circulo svg{ width: 27px; height: 27px; margin-left: 4px; }
   .video-play:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
 
   .video-placeholder video{
