@@ -255,13 +255,12 @@
   .field-hint{
     margin: 6px 0 0;
     font-size: 0.875rem;
-    color: var(--ink-soft);
-    opacity: 0.85;
+    color: #4A544F; /* 7,5:1 sobre el fondo crema (WCAG AA) */
   }
+  .field-hint:empty{ display: none; }
 
   .field-hint.error{
     color: var(--incorrect);
-    opacity: 1;
     font-weight: 500;
   }
 
@@ -283,6 +282,8 @@
   }
 
   .consent-row.invalid{ border-color: var(--incorrect); }
+  .consent-row a{ color: var(--primary); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  .consent-row a:focus-visible{ outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 2px; }
   #hintConsent{ margin: -10px 0 16px; }
   #hintConsent[hidden]{ display: none; }
 
@@ -381,6 +382,7 @@
     text-align: left;
   }
   .video-aviso[hidden]{ display: none; }
+  .video-duracion{ display: block; margin-bottom: 2px; font-weight: 600; }
   .video-aviso.visto{ background: rgba(2, 178, 5, 0.08); border-color: var(--brand-bright); color: var(--primary); font-weight: 600; }
   .video-aviso.problema{ background: rgba(196, 0, 31, 0.06); border-color: var(--incorrect); }
   .video-aviso .ghost-btn{ background: #fff; }
@@ -860,7 +862,7 @@
       <div class="form-group">
         <label for="fNombre">Nombre completo</label>
         <input type="text" id="fNombre" maxlength="80" autocomplete="name" aria-describedby="hintNombre" placeholder="Ej.: María Fernanda Ortiz">
-        <p class="field-hint" id="hintNombre">Nombres y apellidos completos.</p>
+        <p class="field-hint" id="hintNombre"></p>
       </div>
 
       <div class="form-row">
@@ -894,7 +896,7 @@
 
       <label class="consent-row" id="consentRow">
         <input type="checkbox" id="fConsent" aria-describedby="hintConsent">
-        <span>Autorizo el tratamiento de mis datos personales para efectos de esta capacitación, conforme a la Ley 1581 de 2013.</span>
+        <span>Autorizo el tratamiento de mis datos personales para efectos de esta capacitación, conforme a la Ley 1581 de 2012 y a la <a href="https://www.bucaramanga.gov.co/wp-content/uploads/2018/12/Resolucion-340-Dic-26-2018-y-Politica.pdf" target="_blank" rel="noopener">política de tratamiento de datos personales</a>.</span>
       </label>
       <p class="field-hint error" id="hintConsent" hidden>Marca la casilla para autorizar el uso de tus datos.</p>
 
@@ -1140,6 +1142,29 @@
   };
   const avisoEspecial = {}; // tipo -> true mientras se muestra un aviso de problema
 
+  // Duración de cada video en segundos, para mostrarla en el aviso sin descargar nada.
+  // Si se cambia un video, hay que actualizar aquí su duración.
+  const DURACION_S = {
+    "videos/presentacion.mp4": 24,
+    "videos/pregunta-1.mp4": 28,
+    "videos/pregunta-2.mp4": 32,
+    "videos/pregunta-3.mp4": 12,
+    "videos/pregunta-4.mp4": 12,
+    "videos/pregunta-5.mp4": 66,
+    "videos/despedida.mp4": 22
+  };
+
+  // "Video de 24 segundos", "Video de 1 minuto y 6 segundos"; "" si no se conoce
+  function textoDuracion(tipo){
+    const s = DURACION_S[archivoVideo(tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo])];
+    if (!s) return "";
+    const min = Math.floor(s / 60), seg = s % 60;
+    const partes = [];
+    if (min) partes.push(min === 1 ? "1 minuto" : `${min} minutos`);
+    if (seg) partes.push(seg === 1 ? "1 segundo" : `${seg} segundos`);
+    return "Video de " + partes.join(" y ");
+  }
+
   // Clave del video de la pantalla ("introduccion", "pregunta" o "despedida"); null si no tiene enlace válido
   function claveVideo(tipo){
     const archivo = archivoVideo(tipo === "pregunta" ? VIDEOS.preguntas[current] : VIDEOS[tipo]);
@@ -1151,12 +1176,18 @@
     return !!clave && !vistos.has(clave);
   }
 
-  function mostrarAviso(tipo, clase, texto, boton){
+  function mostrarAviso(tipo, clase, texto, boton, duracion){
     const el = avisos[tipo];
     el.className = "video-aviso" + (clase ? " " + clase : "");
     el.textContent = "";
     el.hidden = !texto;
     if (!texto) return;
+    if (duracion){
+      const d = document.createElement("strong");
+      d.className = "video-duracion";
+      d.textContent = duracion;
+      el.appendChild(d);
+    }
     const span = document.createElement("span");
     span.textContent = texto;
     el.appendChild(span);
@@ -1181,10 +1212,11 @@
     const clave = claveVideo(tipo);
     if (!clave) return mostrarAviso(tipo, "", "");
     const accion = tipo === "pregunta" ? "responder" : tipo === "introduccion" ? "continuar" : "terminar";
+    const duracion = textoDuracion(tipo);
     if (vistos.has(clave)){
-      mostrarAviso(tipo, "visto", tipo === "pregunta" ? "✓ Ya viste el video completo. Ahora responde la pregunta." : "✓ Ya viste el video completo. Ya puedes " + accion + ".");
+      mostrarAviso(tipo, "visto", tipo === "pregunta" ? "✓ Ya viste el video completo. Ahora responde la pregunta." : "✓ Ya viste el video completo. Ya puedes " + accion + ".", null, duracion);
     } else {
-      mostrarAviso(tipo, "", `Mira el video completo para ${accion}.`);
+      mostrarAviso(tipo, "", `Mira el video completo para ${accion}.`, null, duracion);
     }
   }
 
@@ -1459,7 +1491,7 @@
     const correoOk = isCorreoValido(fCorreo.value);
 
     paintField(fNombre, hintNombre, nombreOk,
-      "Nombres y apellidos completos.", "Escribe tu nombre completo.");
+      "", "Escribe tu nombre completo.");
     paintField(fDocumento, hintDocumento, documentoOk,
       "Solo números, sin puntos: de 3 a 11 dígitos.", "Debe tener entre 3 y 11 números.");
     paintField(fTelefono, hintTelefono, telefonoOk,
