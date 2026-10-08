@@ -48,16 +48,10 @@
     --incorrect: #C4001F;     /* Rojo de acento oscurecido para que se lea (6.2:1) */
     --border: #D9D3C1;
     --cream: #F3EFE3;
-    --line: #55605A;          /* Bordes de campos y botones: 6:1 sobre el papel, visibles para todos */
-    --radio: 6px;             /* Esquinas apenas suavizadas: nada de tarjetas redondeadas */
   }
 
   *{ box-sizing: border-box; }
 
-  /* Letra base de 18 px: más cómoda para personas mayores (todo lo que usa rem crece con ella) */
-  html{ font-size: 112.5%; }
-
-  /* Textura de papel muy sutil */
   body::before{
     content: "";
     position: fixed;
@@ -70,10 +64,9 @@
 
   body{
     margin: 0;
-    background: var(--card-bg);
+    background: var(--bg);
     color: var(--ink);
     font-family: 'Work Sans', sans-serif;
-    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -82,287 +75,178 @@
     margin: 0;
   }
 
-  /* ===== Encabezado: libreta de campo con curvas de nivel y un frailejón a línea ===== */
-  .cabecera{
+  .top-bar{
     position: relative;
     overflow: hidden;
-    border-bottom: 2px solid var(--ink);
-    background: var(--bg);
+    padding: 40px 20px 84px;
+    text-align: center;
+    isolation: isolate;
   }
 
-  .topo{
+  .hero-svg{
     position: absolute;
-    top: -30px;
-    right: -150px;
-    width: 640px;
-    height: auto;
-    fill: none;
-    stroke: var(--primary);
-    stroke-width: 1.2;
-    opacity: 0.16;
-    pointer-events: none;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    display: block;
   }
 
-  .cabecera-inner{
+  .top-bar-content{
     position: relative;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 20px 16px 26px;
+    z-index: 1;
   }
 
-  .logo-badge{ display: inline-block; margin-bottom: 26px; }
+  .logo-badge{
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px 26px;
+    box-shadow: 0 16px 32px rgba(8, 20, 17, 0.35);
+    margin-bottom: 22px;
+  }
 
   .logo-badge img{
-    height: 48px;
+    height: 46px;
     width: auto;
     display: block;
   }
 
   .eyebrow{
-    margin: 0 0 10px;
-    padding-right: 76px; /* deja libre el frailejón */
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--primary);
+    margin: 0 0 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #E6F0CF;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
     line-height: 1.4;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.25);
   }
 
-  .cabecera h1{
-    padding-right: 76px;
-    font-size: clamp(1.75rem, 7.4vw, 2.6rem);
+  .top-bar h1{
+    font-size: clamp(1.5rem, 4vw, 2.15rem);
     font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.015em;
-    color: var(--primary-dark);
+    color: var(--cream);
+    letter-spacing: -0.01em;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
   }
 
-  .frailejon{
-    position: absolute;
-    right: 8px;
-    bottom: -2px;
-    width: 70px;
-    height: auto;
-    fill: none;
-    stroke: var(--primary);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .frailejon .hoja{ stroke-width: 1.4; fill: var(--card-bg); }
-  .frailejon .tronco{ stroke-width: 1.1; }
-
-  /* Franja compacta: en todos los pasos menos el registro, solo logo y título corto */
-  .titulo-corto{ display: none; }
-
-  .compacto .cabecera-inner{
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  .compacto .logo-badge{ margin: 0; padding-right: 14px; border-right: 1px solid var(--border); }
-  .compacto .logo-badge img{ height: 36px; }
-  .compacto .eyebrow,
-  .compacto .frailejon{ display: none; }
-  /* El título completo sigue ahí para lectores de pantalla */
-  .compacto .cabecera h1{
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-  .compacto .titulo-corto{
-    display: block;
-    margin: 0;
-    font-family: 'Fraunces', serif;
-    font-size: 1.15rem;
-    font-weight: 600;
-    line-height: 1.2;
-    color: var(--primary-dark);
-  }
-  .compacto .topo{ top: -120px; }
-
-  /* ===== Contenido: una sola columna, alineada a la izquierda ===== */
   .wrap{
-    max-width: 640px;
+    max-width: 560px;
     margin: 0 auto;
-    padding: 8px 16px 64px;
-    position: relative;
+    padding: 24px 16px 64px;
   }
 
-  /* Cada pantalla es una hoja de la libreta: sin tarjeta, sin sombra */
-  .card{ padding: 22px 0 0; }
-
-  /* Etiqueta del paso: "Registro", "Certificado" */
-  .paso-num{
+  .progress-row{
     display: flex;
-    align-items: baseline;
-    gap: 12px;
-    margin: 0 0 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 18px;
+    box-shadow: 0 16px 32px -18px rgba(1, 74, 40, 0.35);
+  }
+
+  .progress-row[hidden]{ display: none; }
+
+  .progress-track{
+    display: flex;
+    gap: 6px;
+  }
+
+  .segment{
+    flex: 1;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--border);
+    transform-origin: center;
+    transition: background 0.45s ease, transform 0.45s ease;
+  }
+
+  .segment.done{ background: var(--brand-bright); }
+  .segment.active{ background: var(--accent); transform: scaleY(1.5); }
+
+  .progress-text{
+    font-size: 0.875rem;
     color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .card{
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 26px 24px;
+    box-shadow: 0 24px 48px -24px rgba(1, 74, 40, 0.35);
+  }
+
+  .card + .card{ margin-top: 20px; }
+
+  .card-first{
+    margin-top: -48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .card + .card-plain{
+    margin-top: 20px;
   }
 
   .card-title{
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 8px;
-    color: var(--ink);
+    margin-bottom: 6px;
   }
 
   .card-subtitle{
     color: var(--ink-soft);
     font-size: 1rem;
-    margin: 0 0 22px;
-    line-height: 1.5;
+    margin: 0 0 20px;
+    line-height: 1.45;
   }
 
-  /* ===== Sendero de 7 paradas: presentación, 5 preguntas y despedida ===== */
-  .sendero{
-    margin: 22px 0 0;
-    padding: 0 0 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .sendero[hidden]{ display: none; }
-
-  .sendero-camino{ position: relative; }
-
-  .sendero-linea{
-    position: absolute;
-    left: 22px;
-    right: 22px;
-    top: 50%;
-    width: calc(100% - 44px);
-    height: 18px;
-    transform: translateY(-50%);
-    fill: none;
-    stroke: var(--ink-soft);
-    stroke-width: 2;
-    stroke-dasharray: 2 5;
-    stroke-linecap: round;
-  }
-
-  .sendero-paradas{
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .sendero-paradas li{
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .parada{
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 2px solid var(--line);
-    background: var(--card-bg);
-    color: var(--ink-soft);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    font-weight: 700;
-    line-height: 1;
-  }
-  .parada svg{ width: 13px; height: 13px; fill: currentColor; }
-
-  .hecha .parada{
-    background: var(--primary);
-    border-color: var(--primary);
-    color: var(--cream);
-  }
-
-  .actual .parada{
-    width: 44px;
-    height: 44px;
-    background: var(--accent);
-    border: 3px solid var(--primary-dark);
-    color: var(--primary-dark);
-    font-size: 1.05rem;
-  }
-  .actual .parada svg{ width: 16px; height: 16px; }
-
-  .sendero-texto{
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    margin: 12px 0 0;
-    font-size: 0.9rem;
-    color: var(--ink-soft);
-  }
-  .sendero-texto strong{ font-size: 1.05rem; color: var(--ink); }
-
-  .solo-lector{
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  /* ===== Formulario ===== */
-  .form-group{ margin-bottom: 20px; }
+  .form-group{ margin-bottom: 16px; text-align: left; }
 
   .form-group label{
     display: block;
     font-size: 1rem;
-    font-weight: 600;
-    color: var(--ink);
+    font-weight: 500;
+    color: var(--ink-soft);
     margin-bottom: 6px;
   }
 
   .form-group input,
   .form-group select{
     width: 100%;
-    min-height: 56px;
     padding: 12px 14px;
-    border: 2px solid var(--line);
-    border-radius: var(--radio);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
     font-family: inherit;
-    font-size: 1.05rem; /* más de 16 px: además evita que el iPhone amplíe la página al escribir */
+    font-size: 1rem; /* 16 px: además evita que el iPhone amplíe la página al escribir */
     color: var(--ink);
     background: #fff;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease;
   }
-
-  .form-group input::placeholder{ color: #7A837E; }
 
   .form-group select{
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231E2A24' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355605A' stroke-width='1.6'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 14px center;
-    background-size: 20px;
-    padding-right: 44px;
+    background-size: 16px;
+    padding-right: 38px;
   }
 
   .form-group input:focus,
   .form-group select:focus{
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--accent);
+    border-color: var(--primary-light);
   }
 
   .form-group input.invalid{
@@ -371,73 +255,67 @@
 
   .field-hint{
     margin: 6px 0 0;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     color: var(--ink-soft);
+    opacity: 0.85;
   }
 
   .field-hint.error{
     color: var(--incorrect);
-    font-weight: 600;
+    opacity: 1;
+    font-weight: 500;
   }
 
-  /* Autorización: todo el renglón se puede tocar para marcar la casilla */
+  /* Autorización: todo el recuadro se puede tocar para marcar la casilla */
   .consent-row{
     display: flex;
-    gap: 14px;
+    gap: 12px;
     align-items: flex-start;
-    margin: 8px 0 22px;
-    padding: 16px 0;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    margin: 18px 0 20px;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
     font-size: 1rem;
     color: var(--ink);
-    line-height: 1.5;
+    line-height: 1.45;
+    text-align: left;
     cursor: pointer;
   }
 
-  .consent-row.invalid{ border-top-color: var(--incorrect); border-bottom-color: var(--incorrect); }
-  #hintConsent{ margin: -14px 0 18px; }
+  .consent-row.invalid{ border-color: var(--incorrect); }
+  #hintConsent{ margin: -10px 0 16px; }
   #hintConsent[hidden]{ display: none; }
 
-  .consent-row input[type="checkbox"]{
-    margin: 0;
-    flex: 0 0 auto;
-    width: 30px;
-    height: 30px;
-    accent-color: var(--primary);
-    cursor: pointer;
-  }
-
-  /* Avisos: nota al margen, con una raya de color a la izquierda */
-  .form-error,
-  .video-aviso,
-  .draft-note,
-  .confirm-panel{
-    border-radius: 0;
-    border: 0;
-    border-left: 4px solid var(--accent);
-    background: rgba(255, 178, 2, 0.12);
-    padding: 12px 14px;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--ink);
-  }
-
   .form-error{
-    margin: 0 0 16px;
-    border-left-color: var(--incorrect);
+    margin: 0 0 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
     background: rgba(196, 0, 31, 0.06);
+    border: 1.5px solid var(--incorrect);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
   }
   .form-error[hidden]{ display: none; }
   .form-error p{ margin: 0; font-weight: 600; color: var(--incorrect); }
   .form-error ul{ margin: 6px 0 0; padding-left: 20px; }
   .form-error li + li{ margin-top: 2px; }
 
-  /* ===== Videos ===== */
+  .consent-row input[type="checkbox"]{
+    margin: 0;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
   .video-placeholder{
     aspect-ratio: 16 / 9;
-    background: var(--primary-dark);
-    border-radius: var(--radio);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -445,7 +323,7 @@
     gap: 10px;
     text-align: center;
     padding: 16px;
-    margin-bottom: 18px;
+    margin-bottom: 24px;
     position: relative;
     overflow: hidden;
   }
@@ -458,17 +336,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.28);
   }
 
   .video-placeholder p{
     margin: 0;
-    color: rgba(255,255,255,0.9);
+    color: rgba(255,255,255,0.88);
     font-size: 1rem;
   }
 
   .video-placeholder .small{
     font-size: 0.875rem;
-    color: rgba(255,255,255,0.7);
+    color: rgba(255,255,255,0.55);
   }
 
   .video-placeholder.has-video{
@@ -515,24 +394,34 @@
     height: 100%;
     object-fit: cover;
   }
-  .video-facade .play-circle{ position: relative; width: 68px; height: 68px; border: 3px solid var(--primary-dark); transition: transform 0.15s ease; }
+  .video-facade .play-circle{ position: relative; width: 64px; height: 64px; transition: transform 0.15s ease; }
   .video-facade:active .play-circle{ transform: scale(0.94); }
   .video-facade-texto{
     position: relative;
     padding: 6px 14px;
-    border-radius: var(--radio);
-    background: rgba(1, 40, 20, 0.85); /* texto blanco legible sobre cualquier miniatura */
+    border-radius: 999px;
+    background: rgba(1, 40, 20, 0.78); /* texto blanco legible sobre cualquier miniatura */
     color: #FFFFFF;
     font-size: 1rem;
     font-weight: 600;
   }
-  .video-facade:focus-visible{ outline: 4px solid var(--accent); outline-offset: -4px; }
+  .video-facade:focus-visible{ outline: 3px solid var(--accent); outline-offset: -3px; }
 
   /* Aviso del video: bloqueado hasta verlo completo, ya visto, adelantado o sin cargar */
-  .video-aviso{ margin: 0 0 18px; }
+  .video-aviso{
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 178, 2, 0.12);
+    border: 1.5px solid rgba(255, 178, 2, 0.6);
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.45;
+    text-align: left;
+  }
   .video-aviso[hidden]{ display: none; }
-  .video-aviso.visto{ border-left-color: var(--primary); background: rgba(2, 178, 5, 0.09); color: var(--primary-dark); font-weight: 600; }
-  .video-aviso.problema{ border-left-color: var(--incorrect); background: rgba(196, 0, 31, 0.06); }
+  .video-aviso.visto{ background: rgba(2, 178, 5, 0.08); border-color: var(--brand-bright); color: var(--primary); font-weight: 600; }
+  .video-aviso.problema{ background: rgba(196, 0, 31, 0.06); border-color: var(--incorrect); }
   .video-aviso .ghost-btn{ background: #fff; }
 
   /* Opciones bloqueadas mientras no se vea el video completo */
@@ -540,6 +429,7 @@
 
   .cert-placeholder{
     border: 1.5px dashed var(--accent);
+    border-radius: 16px;
     background: rgba(255, 178, 2, 0.10);
     padding: 30px 16px;
     display: flex;
@@ -685,9 +575,18 @@
     padding: 0 calc(var(--u) * 0.6);
     color: var(--accent-ink);
   }
+  .draft-note{
+    margin: 12px 0 22px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255,178,2,0.10);
+    border: 1px solid rgba(255,178,2,0.45);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--accent-ink);
+    text-align: left;
+  }
   .draft-note[hidden]{ display: none; }
-
-  .draft-note{ margin: 12px 0 22px; font-size: 0.9rem; color: var(--accent-ink); }
 
   .download-status{
     min-height: 1.2em;
@@ -695,139 +594,157 @@
     font-size: 1rem;
     color: var(--ink-soft);
   }
-  .download-status.error{ color: var(--incorrect); font-weight: 600; }
+  .download-status.error{ color: var(--incorrect); font-weight: 500; }
 
-  /* ===== Preguntas: renglones de formulario con la letra en un recuadro ===== */
   .question{
-    font-size: 1.45rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    line-height: 1.3;
-    margin: 4px 0 20px;
+    line-height: 1.35;
+    margin-bottom: 20px;
   }
 
   .options{
     display: flex;
     flex-direction: column;
-    border-top: 1px solid var(--border);
+    gap: 10px;
   }
 
   .option{
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     width: 100%;
-    min-height: 64px;
     text-align: left;
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    border-radius: 0;
-    padding: 12px 8px;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 14px;
     font-family: inherit;
-    font-size: 1.05rem;
-    line-height: 1.4;
+    font-size: 1rem;
     color: var(--ink);
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
   }
 
-  .option:hover:not(:disabled){ background: rgba(1, 103, 55, 0.06); }
-  .option:active:not(:disabled){ background: rgba(1, 103, 55, 0.12); }
+  .option:hover:not(:disabled){
+    border-color: var(--primary-light);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px -10px rgba(1, 74, 40, 0.4);
+  }
+
+  .option:active:not(:disabled){
+    transform: translateY(0) scale(0.98);
+  }
 
   .option:focus-visible{
-    outline: 3px solid var(--primary);
-    outline-offset: -3px;
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   .option .badge{
     flex: 0 0 auto;
-    width: 38px;
-    height: 38px;
-    border: 2px solid var(--primary);
-    border-radius: 3px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
     color: var(--primary);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Fraunces', serif;
-    font-size: 1.1rem;
+    font-size: 0.875rem;
     font-weight: 600;
   }
 
-  .option.wrong{ background: rgba(196, 0, 31, 0.07); }
-  .option.wrong .badge{ border-color: var(--incorrect); background: var(--incorrect); color: #fff; }
+  .option.wrong{
+    border-color: var(--incorrect);
+    background: rgba(196, 0, 31, 0.06);
+  }
 
-  .option.correct{ background: rgba(2, 178, 5, 0.10); font-weight: 600; }
-  .option.correct .badge{ border-color: var(--correct); background: var(--correct); color: #fff; }
+  .option.wrong .badge{
+    border-color: var(--incorrect);
+    color: var(--incorrect);
+  }
+
+  .option.correct{
+    border-color: var(--brand-bright);
+    background: rgba(2, 178, 5, 0.08);
+  }
+
+  .option.correct .badge{
+    border-color: var(--correct);
+    background: var(--correct);
+    color: #fff;
+  }
 
   .option:disabled{ cursor: default; }
 
   .feedback{
-    min-height: 24px;
+    min-height: 22px;
     margin: 16px 0 4px;
-    font-size: 1.05rem;
-    font-weight: 600;
+    font-size: 1rem;
+    font-weight: 500;
   }
 
   .feedback.ok{ color: var(--correct); }
   .feedback.no{ color: var(--incorrect); }
 
-  /* ===== Botones grandes, como en la señalética de parque ===== */
   .next-btn{
     margin-top: 12px;
     width: 100%;
-    min-height: 62px;
     background: var(--primary);
     color: var(--cream);
-    border: 2px solid var(--primary);
-    border-radius: var(--radio);
-    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
     font-family: inherit;
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 14px 24px -12px rgba(1, 74, 40, 0.5);
   }
 
   .next-btn:disabled{
-    background: #E6E3D8;
-    border-color: #E6E3D8;
+    background: var(--border);
     color: var(--ink-soft);
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   .next-btn:not(:disabled):hover{
     background: var(--primary-light);
-    border-color: var(--primary-light);
+    transform: translateY(-1px);
   }
 
-  .next-btn:not(:disabled):active{ transform: translateY(1px); }
+  .next-btn:not(:disabled):active{
+    transform: translateY(0) scale(0.98);
+  }
 
-  .done-card h2{ font-size: 1.6rem; line-height: 1.2; margin-bottom: 8px; }
+  .done-card{ text-align: center; }
+
+  .done-card h2{ font-size: 1.5rem; margin-bottom: 10px; }
 
   .done-card > p{
     color: var(--ink-soft);
     line-height: 1.5;
-    margin: 0 0 4px;
+    margin-bottom: 4px;
   }
 
   .ghost-btn{
     margin-top: 6px;
-    min-height: 54px;
     background: none;
-    border: 2px solid var(--line);
-    color: var(--ink);
-    border-radius: var(--radio);
+    border: 1.5px solid var(--border);
+    color: var(--ink-soft);
+    border-radius: 12px;
     padding: 10px 18px;
     font-family: inherit;
     font-size: 1rem;
-    font-weight: 500;
     cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
   }
 
-  .ghost-btn:hover{ border-color: var(--primary); color: var(--primary); }
-  .ghost-btn:active{ background: rgba(1, 103, 55, 0.06); }
+  .ghost-btn:hover{ border-color: var(--primary-light); color: var(--primary); }
+  .ghost-btn:active{ transform: scale(0.98); }
 
   .ghost-btn--full{
     display: block;
@@ -843,7 +760,14 @@
   .ghost-btn:disabled{ opacity: 0.6; cursor: wait; }
 
   /* Confirmación de "Soy otra persona" */
-  .confirm-panel{ margin: 12px 0 18px; padding: 16px; }
+  .confirm-panel{
+    margin: 12px 0 18px;
+    padding: 16px;
+    border-radius: 14px;
+    background: rgba(255, 178, 2, 0.10);
+    border: 1.5px solid rgba(255, 178, 2, 0.55);
+    text-align: left;
+  }
   .confirm-panel[hidden]{ display: none; }
   .confirm-title{ margin: 0 0 6px; font-weight: 600; color: var(--ink); }
   .confirm-title:focus{ outline: none; }
@@ -852,9 +776,32 @@
   .confirm-panel .next-btn{ margin-top: 14px; }
   .confirm-panel .download-status{ margin: 8px 0 0; }
 
+  .dev-btn{
+    display: block;
+    width: 100%;
+    margin-bottom: 22px;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1.5px dashed var(--border);
+    border-radius: 10px;
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dev-btn:hover{ border-color: var(--accent); color: var(--primary); }
+  .dev-btn:active{ transform: scale(0.99); }
+
   .next-btn:focus-visible,
-  .ghost-btn:focus-visible{
-    outline: 3px solid var(--accent);
+  .ghost-btn:focus-visible,
+  .dev-btn:focus-visible,
+  .form-group select:focus-visible{
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 
@@ -863,12 +810,22 @@
   }
 
   @media (min-width: 760px){
-    .cabecera-inner{ padding: 28px 24px 34px; }
-    .topo{ right: 0; width: 760px; }
-    .frailejon{ width: 92px; right: 24px; }
-    .eyebrow, .cabecera h1{ padding-right: 110px; }
+    .wrap{
+      max-width: 820px;
+      padding: 32px 24px 80px;
+    }
 
-    .wrap{ padding: 12px 24px 80px; }
+    .top-bar{
+      padding: 56px 20px 96px;
+    }
+
+    .top-bar h1{
+      font-size: clamp(2.15rem, 3vw, 2.6rem);
+    }
+
+    .card{
+      padding: 40px 48px;
+    }
 
     .form-row{
       display: grid;
@@ -876,7 +833,15 @@
       gap: 20px;
     }
 
-    .form-row .form-group{ margin-bottom: 20px; }
+    .form-row .form-group{
+      margin-bottom: 0;
+    }
+
+    .options{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
   }
 </style>
 </head>
@@ -888,35 +853,54 @@
     </div>
   </noscript>
 
-  <header class="cabecera">
-    <!-- Curvas de nivel del páramo (decorativas) -->
-    <svg class="topo" viewBox="0 0 700 260" aria-hidden="true" focusable="false"><path d="M362 70C363 72 362 75 361 78C359 80 356 82 353 84C350 85 346 87 342 87C338 87 334 85 330 85C326 84 324 84 320 84C316 84 310 85 307 84C303 83 300 80 299 78C298 75 301 72 302 70C303 68 303 66 304 64C305 62 307 59 309 58C312 56 315 55 319 54C322 53 326 50 330 50C334 50 339 51 342 53C345 54 345 58 347 60C349 62 351 63 353 64C356 66 361 68 362 70Z"/><path d="M409 73C411 78 407 85 403 89C399 94 392 99 385 102C377 105 369 108 361 108C353 109 344 106 336 105C328 105 322 105 314 105C305 105 291 107 284 104C277 101 272 94 271 89C270 84 276 78 277 73C279 68 277 64 279 59C281 54 284 49 290 45C295 42 303 39 310 36C318 34 328 30 336 30C344 30 355 33 361 37C367 40 367 48 372 52C376 56 383 56 389 60C395 64 407 68 409 73Z"/><path d="M458 76C461 84 451 94 444 101C437 108 425 114 415 119C404 124 391 128 379 129C367 130 354 127 342 126C330 126 319 129 305 128C292 128 270 129 260 125C250 120 247 108 246 100C245 91 254 84 255 76C256 68 251 61 253 54C255 47 260 38 268 32C276 26 289 22 301 18C314 14 329 9 342 10C355 11 370 17 379 23C388 29 388 39 396 44C404 49 418 50 428 55C438 60 455 68 458 76Z"/><path d="M508 79C510 90 493 103 483 112C472 121 457 129 443 135C429 141 413 147 397 149C381 152 365 149 348 149C331 150 314 154 296 153C278 153 249 152 237 145C226 137 226 120 225 109C225 98 234 89 234 79C233 69 222 59 224 49C226 38 233 26 245 18C256 10 275 4 292 -1C310 -5 331 -10 348 -8C365 -6 383 4 395 11C408 18 409 29 421 36C434 42 457 42 471 49C485 56 506 68 508 79Z"/><path d="M557 82C557 95 532 111 518 122C503 134 487 143 470 151C453 159 435 167 416 171C397 174 376 172 354 174C332 175 309 181 286 180C263 178 230 174 217 163C204 153 209 131 208 118C207 104 214 95 211 82C208 69 190 55 192 42C193 29 205 13 221 3C236 -7 262 -14 284 -18C306 -23 333 -28 354 -25C375 -22 395 -8 411 0C427 9 431 19 449 26C466 33 500 32 518 42C536 51 557 69 557 82Z"/><path d="M602 85C599 101 566 118 549 131C531 145 516 156 497 166C478 177 458 188 436 193C413 199 387 198 360 200C333 202 302 209 275 206C249 203 213 193 200 180C186 167 197 142 194 126C192 110 192 100 186 85C179 70 154 51 156 35C157 19 176 -0 196 -12C216 -24 249 -30 276 -35C303 -39 335 -43 360 -39C385 -35 407 -19 427 -10C446 -1 456 7 479 14C503 22 547 22 568 34C588 46 606 69 602 85Z"/><path d="M643 88C636 107 596 124 577 140C557 155 545 169 525 182C505 195 483 210 457 218C430 225 398 226 366 228C334 231 296 237 266 232C236 226 200 211 186 195C172 178 186 151 181 133C176 116 166 106 155 88C145 70 113 46 116 27C119 8 147 -14 173 -26C199 -39 238 -45 270 -49C302 -54 337 -57 366 -52C395 -47 418 -31 443 -22C467 -13 484 -7 513 1C542 9 597 11 619 26C640 41 650 69 643 88Z"/><path d="M679 91C668 113 623 129 603 148C582 166 577 184 556 200C535 216 510 235 479 244C448 254 409 255 372 257C335 259 290 264 257 255C224 247 190 227 175 208C160 189 177 161 168 141C158 122 135 112 119 91C104 70 70 40 75 18C81 -4 121 -26 152 -39C184 -53 229 -58 265 -62C302 -66 340 -69 372 -64C404 -60 430 -43 460 -35C490 -27 516 -24 550 -15C585 -6 647 1 669 18C690 36 690 69 679 91Z"/><path d="M708 94C693 118 649 135 629 156C609 177 611 200 590 220C569 239 538 262 503 273C468 284 420 284 378 285C336 285 285 288 250 277C215 266 184 240 167 219C151 198 166 171 151 150C136 129 97 117 77 94C58 71 24 34 34 10C44 -14 97 -36 135 -50C173 -64 221 -68 262 -72C302 -77 342 -81 378 -77C414 -74 444 -58 479 -51C515 -43 551 -42 590 -32C630 -22 696 -10 716 11C736 32 722 70 708 94Z"/></svg>
-    <div class="cabecera-inner">
+  <div class="top-bar">
+    <svg class="hero-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#016737"/>
+      <stop offset="55%" stop-color="#015A30"/>
+      <stop offset="100%" stop-color="#014A28"/>
+    </linearGradient>
+    <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFB202" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#FFB202" stop-opacity="0"/>
+    </radialGradient>
+    <g id="frailejon">
+      <path d="M -2,-14 L 2,-14 L 1.4,0 L -1.4,0 Z" fill="#013D21"/>
+      <path d="M 0.0,-35.0 L 1.4,-24.8 L 8.1,-32.6 L 3.8,-23.3 L 13.6,-26.2 L 4.9,-20.7 L 14.8,-17.9 L 4.5,-17.9 L 11.3,-10.2 L 2.7,-15.8 L 4.2,-5.6 L 0.0,-15.0 L -4.2,-5.6 L -2.7,-15.8 L -11.3,-10.2 L -4.5,-17.9 L -14.8,-17.9 L -4.9,-20.7 L -13.6,-26.2 L -3.8,-23.3 L -8.1,-32.6 L -1.4,-24.8 Z" fill="#013D21"/>
+    </g>
+  </defs>
+
+  <rect x="0" y="0" width="800" height="300" fill="url(#skyGrad)"/>
+  <circle cx="600" cy="70" r="170" fill="url(#sunGlow)"/>
+
+  <path d="M 0,190 Q 0,190 70.0,177.5 Q 140,165 210.0,175.0 Q 280,185 350.0,170.0 Q 420,155 490.0,166.5 Q 560,178 630.0,169.0 Q 700,160 750.0,166.0 L 800,172 L 800,300 L 0,300 Z" fill="#9EC430" opacity="0.22"/>
+  <path d="M 0,225 Q 0,225 60.0,215.0 Q 120,205 190.0,213.5 Q 260,222 330.0,210.0 Q 400,198 470.0,208.0 Q 540,218 610.0,209.0 Q 680,200 740.0,207.5 L 800,215 L 800,300 L 0,300 Z" fill="#016737" opacity="0.95"/>
+  <path d="M 0,262 Q 0,262 65.0,248.5 Q 130,235 195.0,242.5 Q 260,250 330.0,239.0 Q 400,228 470.0,238.0 Q 540,248 610.0,240.0 Q 680,232 740.0,238.0 L 800,244 L 800,300 L 0,300 Z" fill="#013D21"/>
+
+  <ellipse cx="400" cy="297" rx="260" ry="5" fill="#C7D400" opacity="0.15"/>
+
+  <use href="#frailejon" transform="translate(130,235) scale(0.9)"/>
+    <use href="#frailejon" transform="translate(260,250) scale(1.15)"/>
+    <use href="#frailejon" transform="translate(400,228) scale(0.85)"/>
+    <use href="#frailejon" transform="translate(540,248) scale(1.2)"/>
+    <use href="#frailejon" transform="translate(680,232) scale(0.95)"/>
+    <use href="#frailejon" transform="translate(340,239) scale(0.7)"/>
+    <use href="#frailejon" transform="translate(600,240) scale(0.8)"/>
+</svg>
+    <div class="top-bar-content">
       <div class="logo-badge">
         <img src="data:image/png;base64,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" alt="Alcaldía de Bucaramanga — Secretaría de Salud y Ambiente">
       </div>
       <p class="eyebrow">Programa de Gestión Integral del Recurso Hídrico</p>
       <h1>Importancia de la incidencia en el Páramo de Santurbán</h1>
-      <p class="titulo-corto" aria-hidden="true">Páramo de Santurbán</p>
-      <!-- Frailejón dibujado a línea (decorativo) -->
-      <svg class="frailejon" viewBox="0 0 100 130" aria-hidden="true" focusable="false"><path class="tronco" d="M41 50L42 128M59 50L58 128M45 54l-2 7M45 54l2 7M51 54l-2 7M51 54l2 7M57 54l-2 7M57 54l2 7M42 60l-2 7M42 60l2 7M48 60l-2 7M48 60l2 7M54 60l-2 7M54 60l2 7M45 66l-2 7M45 66l2 7M51 66l-2 7M51 66l2 7M57 66l-2 7M57 66l2 7M42 72l-2 7M42 72l2 7M48 72l-2 7M48 72l2 7M54 72l-2 7M54 72l2 7M45 78l-2 7M45 78l2 7M51 78l-2 7M51 78l2 7M57 78l-2 7M57 78l2 7M42 84l-2 7M42 84l2 7M48 84l-2 7M48 84l2 7M54 84l-2 7M54 84l2 7M45 90l-2 7M45 90l2 7M51 90l-2 7M51 90l2 7M57 90l-2 7M57 90l2 7M42 96l-2 7M42 96l2 7M48 96l-2 7M48 96l2 7M54 96l-2 7M54 96l2 7M45 102l-2 7M45 102l2 7M51 102l-2 7M51 102l2 7M57 102l-2 7M57 102l2 7M42 108l-2 7M42 108l2 7M48 108l-2 7M48 108l2 7M54 108l-2 7M54 108l2 7M45 114l-2 7M45 114l2 7M51 114l-2 7M51 114l2 7M57 114l-2 7M57 114l2 7M42 120l-2 7M42 120l2 7M48 120l-2 7M48 120l2 7M54 120l-2 7M54 120l2 7"/><path class="hoja" d="M50 46Q37 45 25 55Q41 55 50 46M50 46Q37 42 22 48Q38 53 50 46M50 46Q38 38 22 41Q36 49 50 46M50 46Q40 35 22 33Q35 45 50 46M50 46Q43 33 26 26Q36 41 50 46M50 46Q47 32 33 21Q38 38 50 46M50 46Q50 31 39 17Q40 35 50 46M50 46Q54 30 47 11Q43 31 50 46M50 46Q58 33 56 14Q47 31 50 46M50 46Q61 36 63 18Q51 31 50 46M50 46Q64 38 72 20Q56 31 50 46M50 46Q64 43 75 28Q58 34 50 46M50 46Q65 46 79 35Q61 36 50 46M50 46Q63 50 79 43Q62 39 50 46M50 46Q62 54 78 51Q64 43 50 46"/><path class="hoja" d="M50 48Q44 41 33 42Q41 49 50 48M50 48Q46 39 34 35Q40 46 50 48M50 48Q49 37 39 29Q41 42 50 48M50 48Q53 38 47 28Q44 40 50 48M50 48Q56 39 54 27Q47 38 50 48M50 48Q59 42 60 30Q51 38 50 48M50 48Q59 46 64 36Q53 39 50 48M50 48Q60 49 70 41Q57 41 50 48"/></svg>
     </div>
-  </header>
+  </div>
 
   <main class="wrap">
 
-    <!-- Sendero de avance: presentación, 5 preguntas y despedida -->
-    <nav class="sendero" id="progressRow" aria-label="Avance de la capacitación" hidden>
-      <div class="sendero-camino">
-        <svg class="sendero-linea" viewBox="0 0 600 18" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 9Q50 1 100 9T200 9T300 9T400 9T500 9T600 9" vector-effect="non-scaling-stroke"/></svg>
-        <ol class="sendero-paradas" id="progressTrack"></ol>
-      </div>
-      <p class="sendero-texto"><strong id="progressLabel"></strong><span id="progressPercent"></span></p>
-    </nav>
-
     <!-- 0. Retomar progreso guardado en este dispositivo -->
-    <section class="card" id="resumeCard" hidden>
-      <p class="paso-num">De nuevo aquí</p>
+    <section class="card card-first" id="resumeCard" hidden>
       <h2 class="card-title">Ya habías empezado</h2>
       <p class="card-subtitle">Encontramos un progreso guardado en este celular. ¿Quieres continuar donde ibas o empezar de nuevo?</p>
       <button class="next-btn" id="resumeContinueBtn">Continuar donde iba →</button>
@@ -930,10 +914,11 @@
     </section>
 
     <!-- 1. Registro -->
-    <section class="card" id="registerCard">
-      <p class="paso-num">Registro</p>
+    <section class="card card-first" id="registerCard">
       <h2 class="card-title">Antes de comenzar</h2>
       <p class="card-subtitle">Regístrate para participar en la capacitación. Tus datos se usarán para certificar tu participación.</p>
+
+      <button type="button" class="dev-btn" id="fillTestBtn">Modo prueba — rellenar formulario</button>
 
       <div class="form-group">
         <label for="fNombre">Nombre completo</label>
@@ -992,6 +977,13 @@
     </section>
 
     <!-- 3. Preguntas -->
+    <div class="progress-row" id="progressRow" hidden>
+      <div class="progress-track" id="progressTrack"></div>
+      <div class="progress-text">
+        <span id="progressLabel"></span>
+        <span id="progressPercent"></span>
+      </div>
+    </div>
 
     <section class="card" id="quizCard" hidden>
       <div class="video-placeholder" data-video="pregunta"></div>
@@ -1014,9 +1006,8 @@
 
     <!-- 5. Certificado -->
     <section class="card done-card" id="doneCard" hidden>
-      <p class="paso-num">Certificado</p>
       <h2 id="doneTitle">¡Completaste la capacitación!</h2>
-      <p>Respondiste correctamente las 5 preguntas sobre el Páramo de Santurbán.</p>
+      <p>Respondiste correctamente las 5 preguntas sobre conservación del agua.</p>
       <div class="diploma-frame">
         <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
           <div class="diploma-banda">
@@ -1090,6 +1081,7 @@
         <button class="ghost-btn ghost-btn--full ghost-btn--alerta" data-otra-confirmar>Sí, empezar de nuevo</button>
         <button class="ghost-btn ghost-btn--full" data-otra-cancelar>Cancelar</button>
       </div>
+      <button class="ghost-btn" id="restartBtn">Reiniciar demostración</button>
     </section>
 
   </main>
@@ -1476,15 +1468,13 @@
 
   function showScreen(name){
     pantallaActual = name;
-    document.body.classList.toggle("compacto", name !== "register"); // encabezado grande solo en el registro
     resumeCard.hidden = name !== "resume";
     registerCard.hidden = name !== "register";
     introCard.hidden = name !== "intro";
-    progressRow.hidden = !["intro", "quiz", "outro"].includes(name);
+    progressRow.hidden = name !== "quiz";
     quizCard.hidden = name !== "quiz";
     outroCard.hidden = name !== "outro";
     doneCard.hidden = name !== "done";
-    if (!progressRow.hidden) renderProgress();
     refreshVideos();
     actualizarBloqueo();
     ajustarUnidadDiploma(); // el diploma solo tiene ancho cuando su pantalla está visible
@@ -1592,6 +1582,16 @@
   });
   fConsent.addEventListener("change", validateForm);
 
+  document.getElementById("fillTestBtn").addEventListener("click", () => {
+    fNombre.value = "Laura Ramírez Gómez";
+    fTipoDoc.value = "CC";
+    fDocumento.value = "1098765432";
+    fTelefono.value = "3001234567";
+    fCorreo.value = "prueba@correo.com";
+    fConsent.checked = true;
+    touched.add("fNombre"); touched.add("fDocumento"); touched.add("fTelefono"); touched.add("fCorreo");
+    validateForm();
+  });
 
   const fTipoDoc = document.getElementById("fTipoDoc");
 
@@ -1634,27 +1634,15 @@
   const feedback = document.getElementById("feedback");
   const nextBtn = document.getElementById("nextBtn");
 
-  // Sendero de 7 paradas: presentación, una por pregunta y despedida
-  const ICONO_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg>';
-  const ICONO_META = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 2h2v20H5zM8 3h11l-3 4.5 3 4.5H8z"/></svg>';
-
   function renderProgress(){
-    const paradas = ["Presentación", ...questions.map((_, i) => `Pregunta ${i + 1}`), "Despedida"];
-    const actual = pantallaActual === "intro" ? 0 : pantallaActual === "outro" ? paradas.length - 1 : current + 1;
     progressTrack.innerHTML = "";
-    paradas.forEach((nombre, i) => {
-      const li = document.createElement("li");
-      li.className = i < actual ? "hecha" : i === actual ? "actual" : "";
-      if (i === actual) li.setAttribute("aria-current", "step");
-      const icono = i === 0 ? ICONO_PLAY : i === paradas.length - 1 ? ICONO_META : String(i);
-      const estado = i < actual ? "hecho" : i === actual ? "aquí estás" : "pendiente";
-      li.innerHTML = `<span class="parada" aria-hidden="true">${icono}</span><span class="solo-lector">${nombre}: ${estado}</span>`;
-      progressTrack.appendChild(li);
+    questions.forEach((_, i) => {
+      const seg = document.createElement("span");
+      seg.className = "segment" + (i < current ? " done" : "") + (i === current ? " active" : "");
+      progressTrack.appendChild(seg);
     });
-    progressLabel.textContent = actual === 0 || actual === paradas.length - 1
-      ? paradas[actual]
-      : `Pregunta ${current + 1} de ${questions.length}`;
-    progressPercent.textContent = `Parada ${actual + 1} de ${paradas.length}`;
+    progressLabel.textContent = `Pregunta ${current + 1} de ${questions.length}`;
+    progressPercent.textContent = `${Math.round((current / questions.length) * 100)}% completado`;
   }
 
   function renderQuestion(){
@@ -1810,6 +1798,10 @@
   }
 
   // 5. Reiniciar demo
+  document.getElementById("restartBtn").addEventListener("click", () => {
+    borrarDatosDelCelular();
+    showScreen("register");
+  });
 
   // 0. Retomar progreso guardado
   document.getElementById("resumeContinueBtn").addEventListener("click", () => {
