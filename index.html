@@ -776,30 +776,8 @@
   .confirm-panel .next-btn{ margin-top: 14px; }
   .confirm-panel .download-status{ margin: 8px 0 0; }
 
-  .dev-btn{
-    display: block;
-    width: 100%;
-    margin-bottom: 22px;
-    padding: 10px 14px;
-    background: transparent;
-    border: 1.5px dashed var(--border);
-    border-radius: 10px;
-    color: var(--ink-soft);
-    font-family: inherit;
-    font-size: 0.74rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: border-color 0.2s ease, color 0.2s ease;
-  }
-
-  .dev-btn:hover{ border-color: var(--accent); color: var(--primary); }
-  .dev-btn:active{ transform: scale(0.99); }
-
   .next-btn:focus-visible,
   .ghost-btn:focus-visible,
-  .dev-btn:focus-visible,
   .form-group select:focus-visible{
     outline: 2px solid var(--primary);
     outline-offset: 2px;
@@ -918,8 +896,6 @@
       <h2 class="card-title">Antes de comenzar</h2>
       <p class="card-subtitle">Regístrate para participar en la capacitación. Tus datos se usarán para certificar tu participación.</p>
 
-      <button type="button" class="dev-btn" id="fillTestBtn">Modo prueba — rellenar formulario</button>
-
       <div class="form-group">
         <label for="fNombre">Nombre completo</label>
         <input type="text" id="fNombre" maxlength="80" autocomplete="name" aria-describedby="hintNombre" placeholder="Ej.: María Fernanda Ortiz">
@@ -1007,7 +983,7 @@
     <!-- 5. Certificado -->
     <section class="card done-card" id="doneCard" hidden>
       <h2 id="doneTitle">¡Completaste la capacitación!</h2>
-      <p>Respondiste correctamente las 5 preguntas sobre conservación del agua.</p>
+      <p>Respondiste correctamente las 5 preguntas sobre el Páramo de Santurbán.</p>
       <div class="diploma-frame">
         <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
           <div class="diploma-banda">
@@ -1081,7 +1057,6 @@
         <button class="ghost-btn ghost-btn--full ghost-btn--alerta" data-otra-confirmar>Sí, empezar de nuevo</button>
         <button class="ghost-btn ghost-btn--full" data-otra-cancelar>Cancelar</button>
       </div>
-      <button class="ghost-btn" id="restartBtn">Reiniciar demostración</button>
     </section>
 
   </main>
@@ -1582,16 +1557,6 @@
   });
   fConsent.addEventListener("change", validateForm);
 
-  document.getElementById("fillTestBtn").addEventListener("click", () => {
-    fNombre.value = "Laura Ramírez Gómez";
-    fTipoDoc.value = "CC";
-    fDocumento.value = "1098765432";
-    fTelefono.value = "3001234567";
-    fCorreo.value = "prueba@correo.com";
-    fConsent.checked = true;
-    touched.add("fNombre"); touched.add("fDocumento"); touched.add("fTelefono"); touched.add("fCorreo");
-    validateForm();
-  });
 
   const fTipoDoc = document.getElementById("fTipoDoc");
 
@@ -1798,10 +1763,6 @@
   }
 
   // 5. Reiniciar demo
-  document.getElementById("restartBtn").addEventListener("click", () => {
-    borrarDatosDelCelular();
-    showScreen("register");
-  });
 
   // 0. Retomar progreso guardado
   document.getElementById("resumeContinueBtn").addEventListener("click", () => {
