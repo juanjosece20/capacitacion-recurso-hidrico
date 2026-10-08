@@ -75,6 +75,7 @@
   }
 
   .top-bar{
+    background-color: var(--primary-dark); /* respaldo sólido si el dibujo no carga: texto crema 9:1 */
     position: relative;
     overflow: hidden;
     padding: 40px 20px 84px;
@@ -347,7 +348,7 @@
 
   .video-placeholder .small{
     font-size: 0.875rem;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.8);
   }
 
   .video-placeholder.has-video{
@@ -544,6 +545,7 @@
   .diploma p{ margin: 0; }
   /* Franja superior con el paisaje de frailejones, como el encabezado de la página */
   .diploma-banda{
+    background-color: var(--primary-dark); /* respaldo sólido detrás del texto blanco */
     position: absolute; left: 0; right: 0; top: 0;
     height: calc(var(--u) * 17);
   }
@@ -900,8 +902,8 @@
     </div>
   </noscript>
 
-  <div class="top-bar">
-    <svg class="hero-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <header class="top-bar">
+    <svg class="hero-svg" viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#016737"/>
@@ -942,7 +944,7 @@
       <p class="eyebrow">Programa de Gestión Integral del Recurso Hídrico</p>
       <h1>Importancia de la incidencia en el Páramo de Santurbán</h1>
     </div>
-  </div>
+  </header>
 
   <main class="wrap">
 
@@ -1002,7 +1004,7 @@
 
       <label class="consent-row" id="consentRow">
         <input type="checkbox" id="fConsent" aria-describedby="hintConsent">
-        <span>Autorizo el tratamiento de mis datos personales para efectos de esta capacitación, conforme a la Ley 1581 de 2012 y a la <a href="https://www.bucaramanga.gov.co/wp-content/uploads/2018/12/Resolucion-340-Dic-26-2018-y-Politica.pdf" target="_blank" rel="noopener">política de tratamiento de datos personales</a>.</span>
+        <span>Autorizo el tratamiento de mis datos personales para efectos de esta capacitación, conforme a la Ley 1581 de 2012 y a la <a href="https://www.bucaramanga.gov.co/wp-content/uploads/2018/12/Resolucion-340-Dic-26-2018-y-Politica.pdf" target="_blank" rel="noopener">política de tratamiento de datos personales (PDF)</a>.</span>
       </label>
       <p class="field-hint error" id="hintConsent" hidden>Marca la casilla para autorizar el uso de tus datos.</p>
 
@@ -1033,7 +1035,7 @@
     <section class="card" id="quizCard" hidden>
       <div class="video-placeholder" data-video="pregunta"></div>
 
-      <h2 class="question" id="questionText"></h2>
+      <h2 class="question" id="questionText">Pregunta</h2>
       <div class="video-aviso" id="avisoPregunta" aria-live="polite" hidden></div>
       <div class="options" id="optionsList"></div>
       <p class="feedback" id="feedback" aria-live="polite"></p>
@@ -1054,7 +1056,7 @@
       <h2 id="doneTitle">¡Completaste la capacitación!</h2>
       <p>Respondiste correctamente las 5 preguntas sobre el Páramo de Santurbán.</p>
       <div class="diploma-frame">
-        <div class="diploma" id="diploma" aria-label="Vista previa del certificado">
+        <div class="diploma" id="diploma" role="group" aria-label="Vista previa del certificado">
           <div class="diploma-banda">
             <svg class="diploma-banda-svg" viewBox="0 0 1100 187" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
               <defs>
@@ -1549,8 +1551,8 @@
     limpiarVideo(el);
     el.classList.remove("has-video");
     el.innerHTML = `
-      <div class="play-circle">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <div class="play-circle" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" focusable="false">
           <path d="M8 5.5L18 12L8 18.5V5.5Z" fill="#014A28"/>
         </svg>
       </div>
