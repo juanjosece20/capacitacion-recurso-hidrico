@@ -148,7 +148,7 @@
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 16px 18px;
-    box-shadow: 0 16px 32px -18px rgba(1, 74, 40, 0.35);
+    box-shadow: 0 8px 32px rgba(1, 74, 40, 0.06);
   }
 
   .progress-row[hidden]{ display: none; }
@@ -182,7 +182,7 @@
     border: 1px solid var(--border);
     border-radius: 22px;
     padding: 26px 24px;
-    box-shadow: 0 24px 48px -24px rgba(1, 74, 40, 0.35);
+    box-shadow: 0 12px 44px rgba(1, 74, 40, 0.08);
   }
 
   .card + .card{ margin-top: 20px; }
@@ -423,7 +423,12 @@
   .video-aviso .ghost-btn{ background: #fff; }
 
   /* Opciones bloqueadas mientras no se vea el video completo */
-  .option.bloqueada{ opacity: 0.5; cursor: not-allowed; }
+  .option.bloqueada{
+    background: #F1F0EB;   /* gris muy claro: se nota inactiva, pero se lee (6,9:1) */
+    border-color: #E2DFD6;
+    color: #4A544F;
+    cursor: not-allowed;
+  }
 
   .cert-placeholder{
     border: 1.5px dashed var(--accent);
@@ -703,8 +708,8 @@
   }
 
   .next-btn:disabled{
-    background: var(--border);
-    color: var(--ink-soft);
+    background: #E9E7E0;   /* gris claro con texto oscuro: 6,3:1 */
+    color: #4A544F;
     cursor: not-allowed;
     box-shadow: none;
   }
