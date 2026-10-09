@@ -20,6 +20,7 @@
 const HOJA_REGISTROS = "Registros";
 const HOJA_RESUMEN = "Resumen";
 const ZONA_HORARIA = "America/Bogota";
+const CELULAR_DISTINTO = "celular-distinto"; // respuesta interna de guardar_
 
 const MAX_TAMANO_ENVIO = 4000;         // caracteres; un envío normal ocupa unos 400
 const MAX_FILAS = 2000;                // tope de personas, para que un abuso no llene la hoja
@@ -75,6 +76,7 @@ function doPost(e) {
       if (v.tipo === "consulta") return responderDatos_(consultar_(v));
       const estado = guardar_(v);
       if (!estado) return responder_(false, "Se alcanzó el máximo de registros");
+      if (estado === CELULAR_DISTINTO) return responder_(false, "El celular no coincide con el registrado");
       return responder_(true, estado);
     } finally {
       candado.releaseLock();
@@ -100,7 +102,8 @@ function validar_(d) {
   const tipo = d.tipo;
   if (tipo !== "registro" && tipo !== "fin" && tipo !== "consulta") return { error: "Tipo de envío inválido" };
 
-  const nombre = limpiarTexto_(d.nombre);
+  // Sin = + - @ al inicio: al descargar la hoja como CSV o Excel se tomarían como fórmula
+  const nombre = limpiarTexto_(d.nombre).replace(/^[\s=+\-@]+/, "");
   if (nombre.length < 3 || nombre.length > 80) return { error: "Nombre inválido" }; // más largo no cabe en el certificado
 
   const tipoDocumento = d.tipoDocumento;
@@ -113,7 +116,7 @@ function validar_(d) {
   if (!/^3\d{9}$/.test(celular)) return { error: "Celular inválido" };
 
   const correo = String(d.correo || "").trim().toLowerCase();
-  if (correo.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return { error: "Correo inválido" };
+  if (correo.length > 254 || !/^[^\s@=+\-][^\s@]*@[^\s@]+\.[^\s@]+$/.test(correo)) return { error: "Correo inválido" };
 
   if (d.consentimiento !== true) return { error: "Falta la autorización de datos" };
 
@@ -189,6 +192,8 @@ function guardar_(v) {
     // La persona ya existe: nunca se crea otra fila. Tampoco se cambian su nombre ni sus datos
     // de contacto, para que alguien que conozca un número de documento no pueda alterarlos.
     const estadoActual = hoja.getRange(fila, COL.estado).getValue();
+    // Solo quien registró ese celular puede marcar el curso como terminado
+    if (v.tipo === "fin" && hoja.getRange(fila, COL.celular).getDisplayValue() !== v.celular) return CELULAR_DISTINTO;
     if (v.tipo === "fin" && estadoActual !== ESTADO_TERMINADO) {
       // Se conserva la primera finalización (los reintentos no la cambian)
       hoja.getRange(fila, COL.estado, 1, 3).setValues([[ESTADO_TERMINADO, v.fechaFin, v.codigo]]);
