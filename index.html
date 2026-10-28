@@ -654,28 +654,6 @@
     border-top: calc(var(--u) * 0.45) solid var(--accent);
   }
 
-  /* Campos que aún faltan por confirmar */
-  .pending{
-    background: rgba(255,178,2,0.22);
-    outline: calc(var(--u) * 0.2) dashed var(--accent);
-    outline-offset: calc(var(--u) * 0.3);
-    border-radius: calc(var(--u) * 0.6);
-    padding: 0 calc(var(--u) * 0.6);
-    color: var(--accent-ink);
-  }
-  .draft-note{
-    margin: 12px 0 22px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    background: rgba(255,178,2,0.10);
-    border: 1px solid rgba(255,178,2,0.45);
-    font-size: 0.875rem;
-    line-height: 1.45;
-    color: var(--accent-ink);
-    text-align: left;
-  }
-  .draft-note[hidden]{ display: none; }
-
   .download-status{
     min-height: 1.2em;
     margin: 10px 0 8px;
@@ -1174,7 +1152,6 @@
           <div class="diploma-ribbon"></div>
         </div>
       </div>
-      <p class="draft-note" id="draftNote" hidden></p>
       <button class="next-btn" id="downloadBtn">Descargar certificado (PDF)</button>
       <p class="download-status" id="downloadStatus" aria-live="polite"></p>
       <a class="ghost-btn ghost-btn--full btn-whatsapp" href="https://wa.me/?text=Complet%C3%A9%20el%20curso%20%C2%ABImportancia%20de%20la%20incidencia%20en%20el%20P%C3%A1ramo%20de%20Santurb%C3%A1n%C2%BB%20de%20la%20Alcald%C3%ADa%20de%20Bucaramanga.%20Te%20invito%20a%20hacerlo%2C%20dura%20unos%205%20minutos%20y%20entregan%20certificado%3A%20https%3A%2F%2Fjuanjosece20.github.io%2Fcapacitacion-recurso-hidrico%2F" target="_blank" rel="noopener">
@@ -1195,7 +1172,7 @@
 
   </main>
 
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 
 </body>
 </html>

@@ -823,26 +823,14 @@ nextBtn.addEventListener("click", () => {
 });
 
 
-// ===== Datos del certificado — completar cuando estén confirmados =====
-// Deja en null lo que aún no esté definido: aparece resaltado en el boceto.
+// ===== Datos del certificado =====
 const CERT = {
   curso: "Importancia de la incidencia en el Páramo de Santurbán", // Nombre oficial del curso
-  firmante: null,       // Nombre de quien firma
-  cargoFirmante: null,  // Cargo de quien firma
+  firmante: "Rosemberg Sanabria Vesga",       // Nombre de quien firma
+  cargoFirmante: "Subsecretario de Ambiente", // Cargo de quien firma
   programa: "Programa de Gestión Integral del Recurso Hídrico",
   ciudad: "Bucaramanga"
 };
-const CERT_PENDIENTE = {
-  curso: "[Nombre oficial del curso]",
-  firmante: "[Nombre de quien firma]",
-  cargoFirmante: "[Cargo]"
-};
-
-function setCertField(el, key){
-  const val = CERT[key];
-  el.textContent = val || CERT_PENDIENTE[key];
-  el.classList.toggle("pending", !val);
-}
 
 function formatDocumento(num){
   return String(num || "").replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -879,21 +867,14 @@ function renderDiploma(){
   document.getElementById("dipDoc").textContent =
     `identificado(a) con ${tipo} ${formatDocumento(participant.documento) || "0.000.000.000"}`;
 
-  setCertField(document.getElementById("dipCourse"), "curso");
-  setCertField(document.getElementById("dipSigner"), "firmante");
-  setCertField(document.getElementById("dipSignerRole"), "cargoFirmante");
+  document.getElementById("dipCourse").textContent = CERT.curso;
+  document.getElementById("dipSigner").textContent = CERT.firmante;
+  document.getElementById("dipSignerRole").textContent = CERT.cargoFirmante;
   document.getElementById("dipProgram").textContent = CERT.programa;
 
   const fecha = fechaFin(participant).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" });
   document.getElementById("dipDate").textContent = `${CERT.ciudad}, ${fecha}`;
   document.getElementById("dipCode").textContent = certCode(participant);
-
-  const faltan = [];
-  if (!CERT.curso) faltan.push("nombre oficial del curso");
-  if (!CERT.firmante || !CERT.cargoFirmante) faltan.push("nombre y cargo de quien firma");
-  const note = document.getElementById("draftNote");
-  note.hidden = faltan.length === 0;
-  note.textContent = `Boceto: falta confirmar ${faltan.join(" y ")} (resaltado en amarillo).`;
 }
 
 // 4. Video despedida
